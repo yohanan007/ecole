@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ParentEleve index{% endblock %}
+
+{% block body %}
+    <h1>ParentEleve index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom</th>
+                <th>Prenom</th>
+                <th>Adresse</th>
+                <th>Telephone</th>
+                <th>Ville</th>
+                <th>Code_postal</th>
+                <th>Pays</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for parent_eleve in parent_eleves %}
+            <tr>
+                <td>{{ parent_eleve.id }}</td>
+                <td>{{ parent_eleve.nom }}</td>
+                <td>{{ parent_eleve.prenom }}</td>
+                <td>{{ parent_eleve.adresse }}</td>
+                <td>{{ parent_eleve.telephone }}</td>
+                <td>{{ parent_eleve.ville }}</td>
+                <td>{{ parent_eleve.codePostal }}</td>
+                <td>{{ parent_eleve.pays }}</td>
+                <td>
+                    <a href="{{ path('app_parent_eleve_show', {'id': parent_eleve.id}) }}">show</a>
+                    <a href="{{ path('app_parent_eleve_edit', {'id': parent_eleve.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_parent_eleve_new') }}">Create new</a>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ParentEleve{% endblock %}
+
+{% block body %}
+    <h1>ParentEleve</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ parent_eleve.id }}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ parent_eleve.nom }}</td>
+            </tr>
+            <tr>
+                <th>Prenom</th>
+                <td>{{ parent_eleve.prenom }}</td>
+            </tr>
+            <tr>
+                <th>Adresse</th>
+                <td>{{ parent_eleve.adresse }}</td>
+            </tr>
+            <tr>
+                <th>Telephone</th>
+                <td>{{ parent_eleve.telephone }}</td>
+            </tr>
+            <tr>
+                <th>Ville</th>
+                <td>{{ parent_eleve.ville }}</td>
+            </tr>
+            <tr>
+                <th>Code_postal</th>
+                <td>{{ parent_eleve.codePostal }}</td>
+            </tr>
+            <tr>
+                <th>Pays</th>
+                <td>{{ parent_eleve.pays }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_parent_eleve_index') }}">back to list</a>
+
+    <a href="{{ path('app_parent_eleve_edit', {'id': parent_eleve.id}) }}">edit</a>
+
+    {{ include('parent_eleve/_delete_form.html.twig') }}
+{% endblock %}
