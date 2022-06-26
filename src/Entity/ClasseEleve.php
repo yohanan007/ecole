@@ -28,12 +28,12 @@ class ClasseEleve
     private $Eleve;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime",nullable=true)
      */
     private $DateValide;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime",nullable=true)
      */
     private $DateFin;
 
@@ -88,5 +88,11 @@ class ClasseEleve
         $this->DateFin = $DateFin;
 
         return $this;
+    }
+
+
+    public function __toString(): string
+    {
+        return strval($this->id);
     }
 }

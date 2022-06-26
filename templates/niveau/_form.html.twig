@@ -1,4 +1,61 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
-{{ form_end(form) }}
+
+
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form, {'method': 'POST'}) }}
+        <div class="mb-3">
+
+            {{form_label(form.nom,null,{
+                'label':'nom',
+                'label_attr': {'class': 'form-label'}
+            })}}
+
+            {{ form_widget(form.nom,{'attr':{'class':'form-control',"placeholder":"nom du niveau"}})}}
+        </div>
+        <div class="mb-3">
+            <ul class="class-fields-list list-group" data-prototype="{{ form_widget(form.classe.vars.prototype)|e }}"
+                data-widget-tags="{{ '<li></li>'|e }}" data-widget-counter="{{ form.classe|length }}">
+                {% for classeField in form.classe %}
+                <li class="list-group-item">
+                    {{ form_errors(classeField) }}
+                    {{ form_widget(classeField) }}
+                </li>
+                {% endfor %}
+            </ul>
+                    <button class="btn btn-primary" type="button" id="add-another-collection-widget" data-list-selector="#class-fields-list">Add another
+            classe</button>
+        </div>
+
+         <button type="submit" class="btn btn-secondary">{{ button_label|default('Save') }}</button>
+           {{ form_end(form) }}
+    </div>
+  
+</div>
+
+
+
+
+    {# collectionType lié aux classes crée pour les niveaux#}
+    {#todo modif code pour classe #}
+
+      {#  <ul id="classe-fields-list" data-prototype="{{ form_widget(form.classe.vars.prototype)|e }}"
+            data-widget-tags="{{ '<li></li>'|e }}" data-widget-counter="{{ form.classe|length }}">
+            {% for classeField in form.classe %}
+            <li>
+                {{ form_errors(classeField) }}
+                {{ form_widget(classeField) }}
+            </li>
+            {% endfor %}
+        </ul>
+        {# bouton de création du dom de la classe #}
+
+
+        
+        
+
+
+
+
+{% block extraJs %}
+    {{ encore_entry_script_tags('niveau') }}
+{% endblock %}

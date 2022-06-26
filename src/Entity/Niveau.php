@@ -5,7 +5,8 @@ namespace App\Entity;
 use App\Repository\NiveauRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping as ORM;   
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=NiveauRepository::class)
@@ -25,7 +26,9 @@ class Niveau
     private $nom;
 
     /**
-     * @ORM\OneToMany(targetEntity=Classe::class, mappedBy="niveau")
+     *@ORM\OneToMany(targetEntity=Classe::class, mappedBy="niveau", cascade={"persist"})
+     *@Groups({"list_class"})
+     *
      */
     private $classe;
 
@@ -53,6 +56,7 @@ class Niveau
 
     /**
      * @return Collection<int, Classe>
+     *@Groups({"list_class"})
      */
     public function getClasse(): Collection
     {

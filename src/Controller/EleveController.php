@@ -4,7 +4,12 @@ namespace App\Controller;
 
 use App\Entity\Eleve;
 use App\Form\EleveType;
+use App\Entity\Niveau;
 use App\Repository\EleveRepository;
+use App\Repository\NiveauRepository;
+use App\Repository\ClasseRepository;
+use App\Repository\ClasseEleveRepository;
+use App\Entity\ClasseEleve;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,19 +33,31 @@ class EleveController extends AbstractController
     /**
      * @Route("/new", name="app_eleve_new", methods={"GET", "POST"})
      */
-    public function new(Request $request, EleveRepository $eleveRepository): Response
+    public function new(Request $request, EleveRepository $eleveRepository, NiveauRepository $niveauRepository, ClasseRepository $classeRepository, ClasseEleveRepository $classeEleveRepository): Response
     {
         $eleve = new Eleve();
+        $niveaux = $niveauRepository->findAll();
         $form = $this->createForm(EleveType::class, $eleve);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             $eleveRepository->add($eleve);
+            $id_classe = $request->request->get('classe_disponible');
+            if(!is_null($id_classe))
+            {
+                $classe = $classeRepository->findOneBy(array("id"=>$id_classe));
+                $classeEleve = new ClasseEleve();
+                $classeEleve->setClasse($classe);
+                $classeEleve->setEleve($eleve);
+                $classeEleveRepository->add($classeEleve);
+            }
             return $this->redirectToRoute('app_eleve_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->renderForm('eleve/new.html.twig', [
             'eleve' => $eleve,
+            'niveaux' => $niveaux,
             'form' => $form,
         ]);
     }

@@ -1,4 +1,74 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+<div, class="card">
+    <div class="card-body">
+        <div class="mb-3">
+            {{form_label(form.nom,null,{
+                'label':'nom',
+                'label_attr': {'class': 'form-label'}
+            })}}
+            {{ form_widget(form.nom,{'attr':{'class':'form-control',"placeholder":"nom de l'enfant"}})}}
+        </div>
+
+        <div class="mb-3">
+            {{form_label(form.prenom,null,{
+                'label':'prenom',
+                'label_attr': {'class': 'form-label'}
+            })}}
+            {{ form_widget(form.prenom,{'attr':{'class':'form-control','placeholder':'prenom de l\'enfant'}})}}  
+        </div>
+
+        <div class="mb-3">
+            {{form_label(form.adresse,null,{
+                'label':'adresse',
+                'label_attr': {'class': 'form-label'}
+            })}}
+            {{ form_widget(form.adresse,{'attr':{'class':'form-control','placeholder':'adresse de l\'enfant'}})}}  
+        </div>
+
+        <div class="mb-3">
+            {{form_label(form.telephone,null,{
+                'label':'telephone',
+                'label_attr': {'class': 'form-label'}
+            })}}
+            {{ form_widget(form.telephone,{'attr':{'class':'form-control','placeholder':'telephone de l\'enfant'}})}}  
+        </div>
+
+        <div class="mb-3">
+            {{form_label(form.mail,null,{
+                'label':'telephone',
+                'label_attr': {'class': 'form-label'}
+            })}}
+            {{ form_widget(form.mail,{'attr':{'class':'form-control','placeholder':'mail de l\'enfant'}})}}  
+        </div>
+
+        <div class="mb-3">
+            <select class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" id="niveau">
+                <option selected>Selectionné le niveau de votre enfant</option>
+                {% for niveau in niveaux %}
+                <option value="{{niveau.id}}">{{ niveau.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id="classe_disponible">
+
+        </div>
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">valider</button>
+        </div>
+    </div>
+</div>
+
 {{ form_end(form) }}
+
+{% block extraJs %}
+<script>
+    console.log('ici');
+    var url = "{{ path('app_niveau_json') }}";
+    var srcf = "{{ csrf_token('niveau-item') }}";
+    console.log(url);  
+</script>
+{{ encore_entry_script_tags('eleve') }}
+{% endblock %}
+
+

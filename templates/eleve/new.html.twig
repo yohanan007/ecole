@@ -1,11 +1,18 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}New Eleve{% endblock %}
-
 {% block body %}
-    <h1>Create new Eleve</h1>
+    
+    <div class="container">
+      <h1 class="">INSCRIPTION NOUVELLE ELEVE</h1>  
+        <div class="card">
+            <div class="card-body align-middle">
+                {{ include('eleve/_form.html.twig') }}
+            </div>
+        </div>
+    </div>
 
-    {{ include('eleve/_form.html.twig') }}
+    
 
     <a href="{{ path('app_eleve_index') }}">back to list</a>
 {% endblock %}
