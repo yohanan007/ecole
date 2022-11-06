@@ -6,6 +6,7 @@ use App\Repository\EleveRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 
 /**
  * @ORM\Entity(repositoryClass=EleveRepository::class)
@@ -20,7 +21,9 @@ class Eleve
     private $id;
 
     /**
-     * @ORM\OneToOne(targetEntity=User::class, inversedBy="eleve", cascade={"persist", "remove"})
+     * un utilisateur peut être un eleve.
+     * @ORM\OneToOne(targetEntity="User")
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     private $user;
 
@@ -44,10 +47,6 @@ class Eleve
      */
     private $telephone;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $mail;
 
     /**
      * @ORM\ManyToMany(targetEntity=ParentEleve::class, mappedBy="enfant")
@@ -71,26 +70,27 @@ class Eleve
 
     public function __construct()
     {
+        //parent::__construct();
+
         $this->parentEleves = new ArrayCollection();
         $this->optionEleves = new ArrayCollection();
         $this->classeEleves = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getUser(): ?User
+    public function getUser()
     {
         return $this->user;
     }
 
-    public function setUser(?User $user): self
+    public function setUser($user)
     {
         $this->user = $user;
-
         return $this;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getNom(): ?string
@@ -137,18 +137,6 @@ class Eleve
     public function setTelephone(string $telephone): self
     {
         $this->telephone = $telephone;
-
-        return $this;
-    }
-
-    public function getMail(): ?string
-    {
-        return $this->mail;
-    }
-
-    public function setMail(string $mail): self
-    {
-        $this->mail = $mail;
 
         return $this;
     }
@@ -250,5 +238,10 @@ class Eleve
         }
 
         return $this;
+    }
+
+    public function __toString()
+    {
+        return $this->nom." ".$this->prenom;
     }
 }

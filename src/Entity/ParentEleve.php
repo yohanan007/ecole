@@ -6,6 +6,7 @@ use App\Repository\ParentEleveRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 
 /**
  * @ORM\Entity(repositoryClass=ParentEleveRepository::class)
@@ -18,6 +19,13 @@ class ParentEleve
      * @ORM\Column(type="integer")
      */
     private $id;
+
+    /**
+     * un utilisateur peut être un parent.
+     * @ORM\OneToOne(targetEntity="User")
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+     */
+    private $user;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -176,4 +184,17 @@ class ParentEleve
 
         return $this;
     }
+
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser($user)
+    {
+        $this->user = $user;
+        return $this;
+    }
+
 }

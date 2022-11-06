@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello parametre!{% endblock %}
+
+{% block body %}
+<h1>parametre</h1>
+<p> {{user.username}}</p>
+{% for role in user.roles %}
+   <p>{{ role }}</p> 
+{% endfor %}
+
+{% endblock %}

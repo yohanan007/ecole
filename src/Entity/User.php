@@ -4,11 +4,13 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @UniqueEntity(fields={"email"}, message="There is already an account with this email")
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -17,7 +19,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    protected $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
@@ -36,9 +38,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $password;
 
     /**
-     * @ORM\OneToOne(targetEntity=Eleve::class, mappedBy="user", cascade={"persist", "remove"})
+     * @ORM\Column(type="boolean")
      */
-    private $eleve;
+    private $isVerified = false;
 
     public function getId(): ?int
     {
@@ -129,25 +131,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
-    public function getEleve(): ?Eleve
+    public function isVerified(): bool
     {
-        return $this->eleve;
+        return $this->isVerified;
     }
 
-    public function setEleve(?Eleve $eleve): self
+    public function setIsVerified(bool $isVerified): self
     {
-        // unset the owning side of the relation if necessary
-        if ($eleve === null && $this->eleve !== null) {
-            $this->eleve->setUser(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($eleve !== null && $eleve->getUser() !== $this) {
-            $eleve->setUser($this);
-        }
-
-        $this->eleve = $eleve;
+        $this->isVerified = $isVerified;
 
         return $this;
     }
+
+    public function __toString()
+    {
+        return $this->email;
+    }
+
 }

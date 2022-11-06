@@ -1,4 +1,112 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+
+        <div class="card">
+            <div class="container-fluid">
+        <div class="card-title">
+            <h1>
+                Inscription parent
+            </h1>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+            {{form_label(form.nom,null,{
+                'label':'nom',
+                'label_attr': {'class': 'form-label'}
+            })}}
+
+            {{ form_widget(form.nom,{'attr':{'class':'form-control',"placeholder":"Nom"}})}}   
+            </div>
+
+            <div class="mb-3">
+            {{form_label(form.prenom,null,{
+                'label':'prenom',
+                'label_attr': {'class': 'form-label'}
+            })}}
+
+            {{ form_widget(form.prenom,{'attr':{'class':'form-control',"placeholder":"Prenom"}})}}   
+            </div>
+
+
+
+            <div class="mb-3">
+            {{form_label(form.adresse,null,{
+                'label':'adresse',
+                'label_attr': {'class': 'form-label'}
+            })}}
+
+            {{ form_widget(form.adresse,{'attr':{'class':'form-control',"placeholder":"adresse"}})}}   
+            </div>
+
+            <div class="mb-3">
+            {{form_label(form.telephone,null,{
+                'label':'telephone',
+                'label_attr': {'class': 'form-label'}
+            })}}
+
+            {{ form_widget(form.telephone,{'attr':{'class':'form-control',"placeholder":"telephone"}})}}   
+            </div>
+
+            
+            <div class="input-group mb-3">
+            {{form_label(form.ville,null,{
+                'label':'ville',
+                'label_attr': {'class': 'form-label'}
+            })}}
+
+            {{ form_widget(form.ville,{'attr':{'class':'form-control',"placeholder":"ville"}})}}
+
+            
+            {{form_label(form.code_postal,null,{
+                'label':'code_postal',
+                'label_attr': {'class': 'form-label'}
+            })}}
+
+            {{ form_widget(form.code_postal,{'attr':{'class':'form-control',"placeholder":"code_postal"}})}} 
+            </div>
+
+            <div class="mb-3">
+            {{form_label(form.pays,null,{
+                'label':'pays',
+                'label_attr': {'class': 'form-label'}
+            })}}
+
+            {{ form_widget(form.pays,{'attr':{'class':'form-control',"placeholder":"pays"}})}}   
+            </div>
+
+            <div class="mb-3">
+            {{form_label(form.user.email,null,{
+                'label':'email',
+                'label_attr': {'class': 'form-label'}
+            })}}
+
+            {{ form_widget(form.user.email,{'attr':{'class':'form-control',"placeholder":"email"}})}}   
+            </div>
+
+            <div class="mb-3">
+                <div class="mb-3">
+                {{form_label(form.user.password.first,null,{
+                    'label':'password',
+                    'label_attr': {'class': 'form-label'}
+                })}}
+
+                {{ form_widget(form.user.password.first,{'attr':{'class':'form-control',"placeholder":"password"}})}}   
+                </div>
+
+                <div class="mb-3">
+                {{form_label(form.user.password.second,null,{
+                    'label':'password',
+                    'label_attr': {'class': 'form-label'}
+                })}}
+
+                {{ form_widget(form.user.password.second,{'attr':{'class':'form-control',"placeholder":"password"}})}}   
+                </div>
+            </div>
+
+
+            <div class="mb-3">
+                    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
 {{ form_end(form) }}

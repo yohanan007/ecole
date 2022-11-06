@@ -17,6 +17,41 @@
         {% endblock %}
     </head>
     <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Navbar</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                {% if is_granted('IS_AUTHENTICATED_REMEMBERED')%}
+                <a class="nav-link disabled" href="">Vous êtes connecté</a>
+                </li>
+                {% else %}
+                <a class="nav-link" href="{{ path('app_login')}}">connexion</a>        
+                </li>
+                <li>
+                <a class="nav-link" href="{{ path('app_parent_eleve_new')}}">inscription</a> 
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_parametre')}}">mes infos</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_eleve_index')}}">enfants</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %} {% else %}disabled {% endif %}" href="{{ path('app_logout')}}" tabindex="-1" aria-disabled="true">deconnexion</a>
+                </li>
+            </ul>
+            </div>
+        </div>
+        </nav>
         {% block body %}{% endblock %}
     </body>
 </html>

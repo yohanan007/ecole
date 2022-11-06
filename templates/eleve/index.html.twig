@@ -25,7 +25,11 @@
                 <td>{{ eleve.prenom }}</td>
                 <td>{{ eleve.adresse }}</td>
                 <td>{{ eleve.telephone }}</td>
-                <td>{{ eleve.mail }}</td>
+                {% if eleve.user is defined and eleve.user is not null %}
+                <td>{{ eleve.user.email }}</td>
+                {% else %}
+                <td></td>
+                {% endif %}
                 <td>
                     <a href="{{ path('app_eleve_show', {'id': eleve.id}) }}">show</a>
                     <a href="{{ path('app_eleve_edit', {'id': eleve.id}) }}">edit</a>
