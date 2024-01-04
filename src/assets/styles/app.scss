@@ -1,0 +1,17 @@
+//@import "custom";
+
+@import "./ckeditor_plus";
+
+@import "~bootstrap/scss/bootstrap";
+
+body {
+    background-color: rgb(239, 242, 255);
+}
+
+th{
+    min-height: 4em;
+}
+
+td{
+    min-height: 3em;
+}
