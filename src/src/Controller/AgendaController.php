@@ -6,11 +6,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
-use App\Repository\EvenementRepository;
+//use App\Repository\EvenementRepository;
 use App\Repository\AgendaRepository;
 use App\Entity\Evenement;
 use App\Entity\Agenda;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+//use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,8 +19,10 @@ class AgendaController extends AbstractController
     /**
      * @Route("/agenda",methods={"GET"}, name="app_agenda")
      */
-    public function index(): Response
+    public function index(AgendaRepository $agendaRepository): Response
     {
+        $arr_agenda = $agendaRepository->getAgendaAVenir();
+
         $str_day = date("d");
         $str_month = date("m");
         $str_year = date("Y");
@@ -29,7 +31,8 @@ class AgendaController extends AbstractController
             'day'=>$str_day,
             'month'=>$str_month,
             'year'=>$str_year,
-            'format'=>'month'
+            'format'=>'month',
+            'agenda'=>json_encode($arr_agenda)
         ]);
     }
 
@@ -82,14 +85,9 @@ class AgendaController extends AbstractController
 
             $date = new \DateTime();
             $date->setTimestamp(intval($str_time_debut)/1000);
-
             $obj_agenda->setHeureDebut($date);
-
             $date = new \DateTime();
             $date->setTimestamp(intval($str_time_fin)/1000);
-
-            $obj_agenda->setHeureFin($date);
-
             $obj_entityManager->persist($obj_evenement);
             $obj_agenda->addEvenement($obj_evenement);
             $obj_entityManager->persist($obj_agenda);

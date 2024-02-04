@@ -45,13 +45,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $isVerified = false;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Agenda::class, mappedBy="users")
+     * @ORM\ManyToMany(targetEntity=Evenement::class, mappedBy="users")
      */
-    private $agendas;
+    private $evenements;
 
     public function __construct()
     {
-        $this->agendas = new ArrayCollection();
+        $this->evenements = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -163,25 +163,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, Agenda>
      */
-    public function getAgendas(): Collection
+    public function getEvenements(): Collection
     {
-        return $this->agendas;
+        return $this->evenements;
     }
 
-    public function addAgenda(Agenda $agenda): self
+    public function addAgenda(Evenement $evenement): self
     {
-        if (!$this->agendas->contains($agenda)) {
-            $this->agendas[] = $agenda;
-            $agenda->addUser($this);
+        if (!$this->evenements->contains($evenement)) {
+            $this->evenements[] = $evenement;
+            $evenement->addUser($this);
         }
 
         return $this;
     }
 
-    public function removeAgenda(Agenda $agenda): self
+    public function removeAgenda(Evenement $evenement): self
     {
-        if ($this->agendas->removeElement($agenda)) {
-            $agenda->removeUser($this);
+        if ($this->evenements->removeElement($evenement)) {
+            $evenement->removeUser($this);
         }
 
         return $this;

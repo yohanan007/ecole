@@ -25,23 +25,12 @@ class Agenda
     private $heure_debut;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $heure_fin;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=User::class, inversedBy="agendas")
-     */
-    private $users;
-
-    /**
      * @ORM\ManyToMany(targetEntity=Evenement::class, mappedBy="horaires")
      */
     private $evenements;
 
     public function __construct()
     {
-        $this->users = new ArrayCollection();
         $this->evenements = new ArrayCollection();
     }
 
@@ -58,42 +47,6 @@ class Agenda
     public function setHeureDebut(?\DateTimeInterface $heure_debut): self
     {
         $this->heure_debut = $heure_debut;
-
-        return $this;
-    }
-
-    public function getHeureFin(): ?\DateTimeInterface
-    {
-        return $this->heure_fin;
-    }
-
-    public function setHeureFin(?\DateTimeInterface $heure_fin): self
-    {
-        $this->heure_fin = $heure_fin;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUsers(): Collection
-    {
-        return $this->users;
-    }
-
-    public function addUser(User $user): self
-    {
-        if (!$this->users->contains($user)) {
-            $this->users[] = $user;
-        }
-
-        return $this;
-    }
-
-    public function removeUser(User $user): self
-    {
-        $this->users->removeElement($user);
 
         return $this;
     }

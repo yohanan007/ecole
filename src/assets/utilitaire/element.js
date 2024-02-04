@@ -770,16 +770,45 @@ class CollectCard{
 
 class Element{
     str_id = "";
-    str_classe = "";
+    str_class = "";
+    str_text = "";
 
-    constructor(str_id, str_classe) {
+    constructor(str_id, str_class,str_text) {
         if (typeof (str_id) !== "undefined") {
             this.str_id = str_id;
         }
 
-        if (typeof (str_classe) !== "undefined") {
-            this.str_classe = str_classe;
+        if (typeof (str_class) !== "undefined") {
+            this.str_class = str_class;
         }
+
+        if(typeof(str_text) !== "undefined"){
+
+        }
+    }
+
+    setId(str_id){
+        this.str_id = str_id;
+    }
+
+    setClasse(str_class){
+        this.str_classe = str_class;
+    }
+
+    setText(str_text){
+        this.str_text = str_text;
+    }
+
+    getId(){
+        return this.str_id;
+    }
+
+    getClass(){
+        return this.str_class;
+    }
+
+    getText(){
+        return this.str_text;
     }
 
     ElementId() {
@@ -809,8 +838,8 @@ class Element{
 
     ElementClass() {
         let dom_class;
-        if (this.str_classe !== "") {
-            dom_class = document.getElementsByClassName(this.str_classe);
+        if (this.str_class !== "") {
+            dom_class = document.getElementsByClassName(this.str_class);
         }
         return dom_class;
     }
@@ -822,6 +851,24 @@ class Element{
                 dom_class[0].remove();
             }
         }
+    }
+}
+
+class Dom extends Element{
+    dom_element;
+
+    constructor(obj_element,dom_element){
+        super(obj_element.getId(), obj_element.getClass(),obj_element.getText());
+        if(typeof(dom_element) != "undefined"){
+            this.dom_element = dom_element;
+        }
+    }
+
+    getAttribute(){
+        this.dom_element.setAttribute("id",this.str_id);
+        this.dom_element.setAttribute("class",this.str_class);
+        this.dom_element.textContent = this.str_text;
+        return this.dom_element;
     }
 }
 
@@ -870,4 +917,4 @@ class Grid{
 
 }
 
-export { Table, colonne, ligne, Card, CollectCard, Element, Nav, Grid  };
+export { Table, colonne, ligne, Card, CollectCard, Element, Nav, Grid, Dom  };

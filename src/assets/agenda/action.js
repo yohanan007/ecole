@@ -1,4 +1,4 @@
-import {  Mois } from "./agenda";
+import {  Mois, Jour } from "./agenda";
 import { Table, Card, Element, Nav, Grid } from "../utilitaire/element";
 
 import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
@@ -14,12 +14,57 @@ import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
 import { Envoi } from "../utilitaire/envoi_utilitaire";
 
 
+obj_action = {};
+
+obj_action.date_jour;
+obj_action.coll_agenda;
+
+obj_action.entete = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+
+obj_action.str_day = "";
+obj_action.str_month = "";
+obj_action.str_year = "";
+
+obj_action.str_action = "";
+obj_action.str_format = "";
+
+obj_action.str_jsonAgenda = "";
+obj_action.coll_agenda;
+
+obj_action.init = function(){
+    let obj_date ={};
+
+    //initialisation des doonées
+    this.str_day = document.getElementById("day").value;
+    this.str_month = document.getElementById("month").value;
+    this.str_year = document.getElementById("year").value;
+    this.str_action = document.getElementById("action").value;   
+    this.str_format = document.getElementById("format").value;
+    this.str_jsonAgenda = document.getElementById("agenda-data").value;
+    this.coll_agenda = JSON.parse(this.str_jsonAgenda);
+
+    console.log(this.str_format);
+
+    const int_day = Number(this.str_day);
+    const int_month = Number(this.str_month);
+    const int_year = Number(this.str_year);
+
+    if (this.str_format === "month") {
+    console.log("format");
+    obj_date = {
+        "annee": int_year,
+        "mois": int_month,
+        "jour" : int_day
+        }
+    }
+    this.generateMois(obj_date,this.coll_agenda,this.str_action);
+}
 
 
 /**
  * @todo : retraité la page en terme de classe
  */
-function generateMois(obj_date, dom_id) {
+obj_action.generateMois = function(obj_date,coll_agenda, dom_id) {
     
     //const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     if (typeof dom_id === "undefined") {
@@ -29,27 +74,35 @@ function generateMois(obj_date, dom_id) {
     let mois;
     let arr;
     let arr_ligne = [];
-    let arr_header;
     let n_time;
-    if (typeof obj_date === "undefined") {
+    let i = 0;
+    let arr_temp = [];
+    let str_class = "";
+    let coll_tempAgenda = [];
+
+    if (typeof coll_agenda === "undefined") {
         mois = new Mois();
         n_time = mois.getTime();
+
     } else {
+        coll_tempAgenda = this.generateCollTime(coll_agenda);
         mois = new Mois(obj_date.annee, obj_date.mois, obj_date.jour);
         n_time = mois.getTime();
     }
     
     arr = mois.getMonth();
-    let i = 0;
-    arr_header = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
-    let arr_temp = [];
-    let str_class = "";
+
     arr.forEach(element => {
-        if (element.getTime() === n_time) {
+        if(coll_tempAgenda.findIndex((element1) => element1.time === element.getTime())>-1){
+            str_class = "table-active";
+        }else {
+            str_class = "";
+        }
+        /*if (element.getTime() === n_time) {
             str_class = "table-active";
         } else {
             str_class = "";
-        }
+        }*/
         if (i < 7) {
             arr_temp.push({
                 "classe": str_class,
@@ -74,16 +127,31 @@ function generateMois(obj_date, dom_id) {
 
 
 
-    let obj_table = new Table(arr_header, arr_ligne, []);
-
+    let obj_table = new Table(this.entete, arr_ligne, []);
     let table = obj_table.getTable()
-
     let dom_div = document.getElementById(dom_id);
     let dom_div_table = document.createElement("div");
     dom_div_table.setAttribute("class","table-responsive-xxl");
     dom_div_table.append(table);
     dom_div.append(dom_div_table);
     startActionTableau(dom_div);
+}
+
+
+
+obj_action.generateCollTime = function(coll_agenda){
+    let coll_retour = [];
+    let dateTemp ;
+    coll_agenda.forEach(element => {
+        dateTemp = new Date(element.heure_debut.date.split(" "));
+        dateTemp = new Date(dateTemp.getFullYear(),dateTemp.getMonth(),dateTemp.getDate());
+        if(coll_retour.findIndex((element) => element.time === dateTemp.getTime() ) === -1){
+            coll_retour.push({"time":dateTemp.getTime()})
+        }
+        
+    });
+    console.log(coll_retour);
+    return coll_retour;
 }
 
 
@@ -410,22 +478,4 @@ function secondeToHour(n_seconde) {
 
 
 
-    //initialisation des doonées
-    let str_day = document.getElementById("day").value;
-    let str_month = document.getElementById("month").value;
-    let str_year = document.getElementById("year").value;
-    let str_action = document.getElementById("action").value;   
-    let str_format = document.getElementById("format").value; 
-
-    let int_day = Number(str_day);
-    let int_month = Number(str_month);
-    let int_year = Number(str_year);
-    if (str_format === "month") {
-    let obj_date = {
-        "annee": int_year,
-        "mois": int_month,
-        "jour" : int_day
-        }
-        
-    generateMois(obj_date,str_action);
-}
+obj_action.init();

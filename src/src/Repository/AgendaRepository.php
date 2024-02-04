@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Agenda;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -45,6 +46,21 @@ class AgendaRepository extends ServiceEntityRepository
         if ($flush) {
             $this->_em->flush();
         }
+    }
+
+
+    public function getAgendaAVenir(){
+        $d_debut = new \DateTime('now');
+        $d_debut->setTime(0,0,0,0);
+
+        $qb = $this->createQueryBuilder('a');
+
+        $qb->select('a.heure_debut, e.sujet, e.corps, e.lieu, e.duree')
+            ->innerJoin('a.evenements','e')
+            ->where('a.heure_debut > :date')
+            ->setParameter('date',$d_debut);
+        
+        return $qb->getQuery()->getResult();
     }
 
     // /**

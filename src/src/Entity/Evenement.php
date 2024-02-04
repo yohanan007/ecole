@@ -6,6 +6,7 @@ use App\Repository\EvenementRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints\DateTime;
 
 /**
  * @ORM\Entity(repositoryClass=EvenementRepository::class)
@@ -35,6 +36,17 @@ class Evenement
     private $lieu;
 
     /**
+     * @ORM\ManyToMany(targetEntity=User::class, inversedBy="evenements")
+     */
+    private $users;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $duree;
+
+    /**
+     * un evenement peut se repéter plusieurs fois d'où le many to many
      * @ORM\ManyToMany(targetEntity=Agenda::class, inversedBy="evenements")
      */
     private $horaires;
@@ -42,6 +54,7 @@ class Evenement
     public function __construct()
     {
         $this->horaires = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -81,6 +94,41 @@ class Evenement
     public function setLieu(?string $lieu): self
     {
         $this->lieu = $lieu;
+
+        return $this;
+    }
+
+    public function getDuree(): ?DateTime
+    {
+        return $this->duree;
+    }
+
+    public function setDuree(?DateTime $duree): self
+    {
+        $this->duree = $duree;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(User $user): self
+    {
+        if (!$this->users->contains($user)) {
+            $this->users[] = $user;
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): self
+    {
+        $this->users->removeElement($user);
 
         return $this;
     }
