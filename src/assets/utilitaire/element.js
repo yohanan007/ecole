@@ -1,4 +1,33 @@
+class TypeElement{
 
+    arr_type = ["card","button","div","nav","span","tr","td","table","option","select","input","label"];
+    str_type = "div";
+
+    constructor(str_type){
+        if(typeof(str_type)!= "undefined"){
+            if(this.arr_type.indexOf(str_type)>-1){
+                this.str_type = str_type;
+            }
+        }
+    }
+
+    getType(){
+        return this.str_type;
+    }
+
+    setType(str_type){
+        if(typeof(str_type)!= "undefined"){
+            if(this.arr_type.indexOf(str_type)>-1){
+                this.str_type = str_type;
+            }
+        }
+        return this.str_type;
+    }
+
+    getElement(){
+        return document.createElement(this.str_type);
+    }
+}
 //gestion de la creation des tableau en js à partir d'objet
 //permet de pouvoir formater les tableaux et donner une cohérence
 
@@ -241,7 +270,7 @@ class Table
     {
         //todo : gestion des option de table
         let dom_table = document.createElement("table");
-        dom_table.setAttribute("class", "table table-secondary table-bordered");
+        dom_table.setAttribute("class", "mt-2 table table-white table-bordered");
         let dom_body = document.createElement("tbody");
         
         this.aro_ligne.forEach((value) => {
@@ -768,23 +797,79 @@ class CollectCard{
     }
 }
 
-class Element{
-    str_id = "";
-    str_classe = "";
 
-    constructor(str_id, str_classe) {
+class Element extends TypeElement{
+    str_id = "";
+    str_class = "";
+    str_text = "";
+    ob_option = {};
+
+    constructor(str_type,str_id, str_class,str_text,ob_option) {
+        if(typeof(str_type) !== "undefined"){
+            super(str_type);
+        }
+
         if (typeof (str_id) !== "undefined") {
             this.str_id = str_id;
         }
 
-        if (typeof (str_classe) !== "undefined") {
-            this.str_classe = str_classe;
+        if (typeof (str_class) !== "undefined") {
+            this.str_class = str_class;
+        }
+
+        if(typeof(str_text) !== "undefined"){
+            this.str_text = str_text;
+        }
+
+        if(typeof(ob_option) !== "undefined"){
+            Object.assign(this.ob_option,ob_option);
+        }
+    }
+
+    setId(str_id){
+        this.str_id = str_id;
+    }
+
+    setClasse(str_class){
+        this.str_classe = str_class;
+    }
+
+    setText(str_text){
+        this.str_text = str_text;
+    }
+
+    setOption(arr_option){
+        this.arr_option = arr_option;
+    }
+
+    getId(){
+        return this.str_id;
+    }
+
+    getClass(){
+        return this.str_class;
+    }
+
+    getText(){
+        return this.str_text;
+    }
+
+    getOption(){
+        return this.ob_option;
+    }
+
+    getOptionByAttribut(str_attribut){
+        if(str_attribut in this.ob_option){
+            return this.option[str_attribut];
+        }else{
+            return null;
         }
     }
 
     ElementId() {
         let dom_id;
-        if (this.str_id !== "") {
+        console.log(this.str_id);
+        if(this.str_id !== "") {
             dom_id = document.getElementById(this.str_id);
         }
         return dom_id;
@@ -795,10 +880,12 @@ class Element{
             b_withParent = false;
         }
         let dom_id = this.ElementId();
-        if (typeof (dom_id !== "undefined")) {
+        console.log(dom_id);
+        if (typeof (dom_id) !== "undefined") {
             if (b_withParent) {
                 dom_id.remove();
             } else {
+                console.log(dom_id.children);
                 while (dom_id.children.length > 0) {
                     dom_id.children[0].remove();
                 }
@@ -809,8 +896,8 @@ class Element{
 
     ElementClass() {
         let dom_class;
-        if (this.str_classe !== "") {
-            dom_class = document.getElementsByClassName(this.str_classe);
+        if (this.str_class !== "") {
+            dom_class = document.getElementsByClassName(this.str_class);
         }
         return dom_class;
     }
@@ -823,6 +910,74 @@ class Element{
             }
         }
     }
+
+
+    getElement(){
+        const dom_temp =  document.createElement(this.str_type);
+        for (const[key,value] of Object.entries(this.ob_option)){
+            dom_temp.setAttribute(key,value);
+        }
+
+        if(this.str_id !== ""){
+            dom_temp.setAttribute("id",this.str_id);
+        }
+
+        if(this.str_class !== ""){
+            dom_temp.setAttribute("class",this.str_class);
+        }
+
+        if(this.str_text !== ""){
+            dom_temp.innerText = this.str_text;
+        }
+
+
+        return dom_temp;
+    }
+}
+
+
+/** 
+ * gestion de la création d'un dom element
+*/
+class Dom extends Element{
+    dom_element;
+
+    constructor(str_type,str_id,str_class,str_text,ob_option){
+        super(str_type,str_id,str_class,str_text,ob_option);
+        this.dom_element = this.getElement();
+        if(str_class === ""){
+            switch(str_type){
+                case 'select' : 
+                this.str_class = "form-select";
+                break;
+                case 'input':
+                this.str_class = "form-control";
+                break;
+                case 'div':
+                this.str_class = "container";
+                break;
+                case 'table' : 
+                this.str_class = "table";
+                break;
+                default:
+                this.str_class = "container-fluid";
+            }
+            console.log(this.str_class);
+        }
+    }
+
+    getAttribute(){
+        this.dom_element.setAttribute("id",this.str_id);
+        this.dom_element.setAttribute("class",this.str_class);
+        this.dom_element.textContent = this.str_text;
+
+        if(typeof(this.ob_option) !== "undefined"){
+            for(const prop in this.ob_option){
+                this.dom_element.setAttribute(prop,this.ob_option[prop]);
+            }
+        } 
+        return this.dom_element;
+    }
 }
 
 class Grid{
@@ -830,12 +985,17 @@ class Grid{
     int_nbr = 3;
     arr_elementGrid;
     dom_elementPrincipal = document.createElement("div");
+    str_nomGrid = "";
 
-    constructor(int_nbr, arr_elementGrid,dom_elementPrincipal){
+    constructor(int_nbr, arr_elementGrid,dom_elementPrincipal,str_nomGrid){
         this.int_nbr = int_nbr;
         this.arr_elementGrid = arr_elementGrid;
         if(typeof(dom_elementPrincipal)!=="undefined"){
             this.dom_elementPrincipal = dom_elementPrincipal;
+        }
+
+        if(typeof(str_nomGrid)!=="undefined"){
+            this.str_nomGrid = str_nomGrid;
         }
     }
 
@@ -845,11 +1005,21 @@ class Grid{
 
     getElementGrid(int_increment){
         let dom_element = document.createElement("div");
-        dom_element.setAttribute("class","col")
+        dom_element.setAttribute("class","col");
+        if(this.str_nomGrid !== ""){
+            const str_idGrid = "col-" + this.str_nomGrid+"-"+ String(int_increment); 
+            dom_element.setAttribute("id",str_idGrid);
+        }
+
         if(typeof(this.arr_elementGrid[int_increment]) !== "undefined"){
             const obj_temp = this.arr_elementGrid[int_increment];
                 if(typeof(obj_temp.element) !== "undefined"){
                     dom_element.append(obj_temp.element);
+                }
+
+                if(typeof(obj_temp.size) !== "undefined"){
+                    const str_size = "col-" + String(obj_temp.size);
+                    dom_element.setAttribute("class",str_size)
                 }
         }
         return dom_element;
@@ -870,4 +1040,4 @@ class Grid{
 
 }
 
-export { Table, colonne, ligne, Card, CollectCard, Element, Nav, Grid  };
+export { Table, colonne, ligne, Card, CollectCard, Element, Nav, Grid, Dom  };

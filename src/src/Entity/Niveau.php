@@ -8,28 +8,19 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;   
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Entity(repositoryClass=NiveauRepository::class)
- */
+#[ORM\Entity(repositoryClass: NiveauRepository::class)]
 class Niveau
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: "string", length: 255)]
+    #[Groups(["list_class"])]
     private $nom;
 
-    /**
-     *@ORM\OneToMany(targetEntity=Classe::class, mappedBy="niveau", cascade={"persist"})
-     *@Groups({"list_class"})
-     *
-     */
+    #[ORM\OneToMany(targetEntity: Classe::class, mappedBy: "niveau", cascade: ["persist"])]
     private $classe;
 
     public function __construct()
@@ -42,6 +33,7 @@ class Niveau
         return $this->id;
     }
 
+    #[Groups(["list_class"])]
     public function getNom(): ?string
     {
         return $this->nom;
@@ -54,10 +46,6 @@ class Niveau
         return $this;
     }
 
-    /**
-     * @return Collection<int, Classe>
-     *@Groups({"list_class"})
-     */
     public function getClasse(): Collection
     {
         return $this->classe;

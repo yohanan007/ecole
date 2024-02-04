@@ -17,14 +17,10 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
 
-/**
- * @Route("/niveau")
- */
+#[Route("/niveau")]
 class NiveauController extends AbstractController
 {
-     /**
-     * @Route("/apptoJson", name="app_niveau_json", methods={"POST"})
-     */
+     #[Route("/apptoJson", name:"app_niveau_json", methods:["POST"])]
     public function toJsonAction(Request $request, NiveauRepository $niveauRepository): JsonResponse
     {
         $id = $request->request->get('id');
@@ -45,9 +41,8 @@ class NiveauController extends AbstractController
         return new JsonResponse([]);
 
     }
-    /**
-     * @Route("/", name="app_niveau_index", methods={"GET"})
-     */
+
+    #[Route("/", name:"app_niveau_index", methods:["GET"])]
     public function index(NiveauRepository $niveauRepository): Response
     {
         return $this->render('niveau/index.html.twig', [
@@ -55,9 +50,7 @@ class NiveauController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/new", name="app_niveau_new", methods={"GET", "POST"})
-     */
+    #[Route("/new", name:"app_niveau_new", methods:["GET", "POST"])]
     public function new(Request $request, NiveauRepository $niveauRepository, ClasseRepository $classeRepository): Response
     {
         $niveau = new Niveau();
@@ -83,15 +76,13 @@ class NiveauController extends AbstractController
             return $this->redirectToRoute('app_niveau_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('niveau/new.html.twig', [
+        return $this->render('niveau/new.html.twig', [
             'niveau' => $niveau,
             'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="app_niveau_show", methods={"GET"})
-     */
+    #[Route("/{id}", name:"app_niveau_show", methods:["GET"])]
     public function show(Niveau $niveau): Response
     {
         return $this->render('niveau/show.html.twig', [
@@ -99,9 +90,7 @@ class NiveauController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="app_niveau_edit", methods={"GET", "POST"})
-     */
+    #[Route("/{id}/edit", name:"app_niveau_edit", methods:["GET", "POST"])]
     public function edit(Request $request, Niveau $niveau, NiveauRepository $niveauRepository): Response
     {
         $form = $this->createForm(NiveauType::class, $niveau);
@@ -112,15 +101,13 @@ class NiveauController extends AbstractController
             return $this->redirectToRoute('app_niveau_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('niveau/edit.html.twig', [
+        return $this->render('niveau/edit.html.twig', [
             'niveau' => $niveau,
             'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="app_niveau_delete", methods={"POST"})
-     */
+    #[Route("/{id}", name:"app_niveau_delete", methods:["POST"])]
     public function delete(Request $request, Niveau $niveau, NiveauRepository $niveauRepository): Response
     {
         if ($this->isCsrfTokenValid('delete'.$niveau->getId(), $request->request->get('_token'))) {

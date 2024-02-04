@@ -12,9 +12,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 class HomeController extends AbstractController
 {
-    /**
-     * @Route("/", name="app_home")
-     */
+    #[Route("/", name:"app_home")]
     public function index(): Response
     {
         return $this->render('home/index.html.twig', [
@@ -22,10 +20,8 @@ class HomeController extends AbstractController
         ]);
     }
 
-    /**
-     * @IsGranted("ROLE_USER")
-     * @Route("/parametre", name="app_parametre")
-     */
+    #[IsGranted("ROLE_USER")]
+    #[Route("/parametre", name:"app_parametre")]
     public function getParametre(): Response 
     {
         $user = $this->get('security.token_storage')->getToken()->getUser();

@@ -4,14 +4,83 @@
 
 @import "~bootstrap/scss/bootstrap";
 
-body {
+// Dans ton fichier app.js ou app.scss
+@import "choices.js/src/styles/choices";
+
+
+html, body {
+    height: 100%;
+    margin: 0;
     background-color: rgb(239, 242, 255);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-th{
-    min-height: 4em;
+
+.container-ttt{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
-td{
-    min-height: 3em;
+.hauteur-ttt{
+    flex-grow: 1; /* Prend tout l'espace restant */
+    display: flex;
+    flex-direction: column;
 }
+
+.ck-editor__editable {
+    min-height: 10em;
+}
+
+.wrapper{
+    margin: 1em auto;
+    padding: 1em;
+    max-height: 300px;
+    width: 95%;
+    font: 18px/1.5 sans-serif;
+}
+
+.same-height-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.same-height-card {
+    height: 100%;
+}
+
+.fc-event-card {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: #f9f9f9;
+  border-left: 4px solid #007bff;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #333;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease;
+}
+
+.fc-event-card:hover {
+  background: #eef6ff;
+}
+
+.fc-event-lieu {
+  font-weight: 600;
+  color: #007bff;
+  margin-bottom: 4px;
+}
+
+.fc-event-description {
+  font-style: italic;
+  color: #555;
+}
+
+@for $i from 1 through 50 {
+    .hauteur-#{$i} {
+      height: #{$i}em;
+    }
+  }
+
+
+  

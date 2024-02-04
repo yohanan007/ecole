@@ -25,7 +25,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
      *
      * @throws UserNotFoundException if the user is not found
      */
-    public function loadUserByUsername(string $identifier): UserInterface
+    public function loadUserByIdentifier(string $identifier): UserInterface
     {
         $userRepository = new UserRepository();
         $user = $userRepository->findByLogin($identifier);
