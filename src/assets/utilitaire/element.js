@@ -1,4 +1,33 @@
+class TypeElement{
 
+    arr_type = ["button","div","nav","span","tr","td","table","option","select","input"];
+    str_type = "div";
+
+    constructor(str_type){
+        if(typeof(str_type)!= "undefined"){
+            if(this.arr_type.indexOf(str_type)>-1){
+                this.str_type = str_type;
+            }
+        }
+    }
+
+    getType(){
+        return this.str_type;
+    }
+
+    setType(str_type){
+        if(typeof(str_type)!= "undefined"){
+            if(this.arr_type.indexOf(str_type)>-1){
+                this.str_type = str_type;
+            }
+        }
+        return this.str_type;
+    }
+
+    getElement(){
+        return document.createElement(this.str_type);
+    }
+}
 //gestion de la creation des tableau en js à partir d'objet
 //permet de pouvoir formater les tableaux et donner une cohérence
 
@@ -768,12 +797,18 @@ class CollectCard{
     }
 }
 
-class Element{
+
+class Element extends TypeElement{
     str_id = "";
     str_class = "";
     str_text = "";
+    ob_option = {};
 
-    constructor(str_id, str_class,str_text) {
+    constructor(str_type,str_id, str_class,str_text,ob_option) {
+        if(typeof(str_type) !== "undefined"){
+            super(str_type);
+        }
+
         if (typeof (str_id) !== "undefined") {
             this.str_id = str_id;
         }
@@ -783,7 +818,11 @@ class Element{
         }
 
         if(typeof(str_text) !== "undefined"){
+            this.str_text = str_text;
+        }
 
+        if(typeof(ob_option) != "undefined"){
+            Object.assign(this.ob_option,ob_option);
         }
     }
 
@@ -799,6 +838,10 @@ class Element{
         this.str_text = str_text;
     }
 
+    setOption(arr_option){
+        this.arr_option = arr_option;
+    }
+
     getId(){
         return this.str_id;
     }
@@ -809,6 +852,18 @@ class Element{
 
     getText(){
         return this.str_text;
+    }
+
+    getOption(){
+        return this.ob_option;
+    }
+
+    getOptionByAttribut(str_attribut){
+        if(str_attribut in this.ob_option){
+            return this.option[str_attribut];
+        }else{
+            return null;
+        }
     }
 
     ElementId() {
@@ -854,20 +909,28 @@ class Element{
     }
 }
 
+
+/** 
+ * gestion de la création d'un dom element
+*/
 class Dom extends Element{
     dom_element;
 
-    constructor(obj_element,dom_element){
-        super(obj_element.getId(), obj_element.getClass(),obj_element.getText());
-        if(typeof(dom_element) != "undefined"){
-            this.dom_element = dom_element;
-        }
+    constructor(str_type,str_id,str_class,str_text,obj_option){
+        super(str_type,str_id,str_class,str_text,obj_option);
+        this.dom_element = this.getElement();
     }
 
     getAttribute(){
         this.dom_element.setAttribute("id",this.str_id);
         this.dom_element.setAttribute("class",this.str_class);
         this.dom_element.textContent = this.str_text;
+
+        if(typeof(this.obj_option) !="undefined"){
+            for(const prop in this.obj_option){
+                this.dom_element.setAttribute(prop,this.obj_option[prop]);
+            }
+        } 
         return this.dom_element;
     }
 }

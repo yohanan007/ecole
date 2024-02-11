@@ -33,7 +33,14 @@ class ActionDay{
 
     getHeureDuJour(int_time){
         const d_time = new Date(int_time);
-        return {"heure":d_time.getHours(), "minute":d_time.getMinutes()};
+        let str_color = "bg-primary";
+
+        if((int < 28800) | (int > 68400 )){
+            str_color = "bg-secondary";
+        }
+
+        const ob_reponse = {"heure":d_time.getHours(), "minute":d_time.getMinutes(), "class":str_color, "seconde": int_time};
+        return ob_reponse;
     }
 
     getCard(){

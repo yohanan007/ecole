@@ -1,4 +1,5 @@
 import { Dom, Card, Nav, Element } from "../utilitaire/element";
+import { Heure } from "./agenda";
 
 
 class ActionElementAgenda{
@@ -61,13 +62,49 @@ class ActionElementAgenda{
 
     getButton(){
         const dom_button = document.createElement("button");
-        this.obj_element.setClasse(this.obj_element.getClass() + "btn btn-secondary btn-lg");
+        this.obj_element.setClasse(this.obj_element.getClass() + " btn btn-secondary btn-lg");
         const obj_dom = new Dom(this.obj_element,dom_button);
         dom_button = obj_dom.getAttribute();
         return dom_button;
     }
 
     getAgenda(){
+
+    }
+
+
+    getSelectHoraire(str_time){
+        const id_select = "select_" + id + "_" + str_time;
+        const ob_select = new Dom("select",id_select,"form-select","",{"name":"select_horaire"})
+        const dom_select = ob_select.getAttribute();
+
+        let int_horaire = 0;
+        let dom_option;
+        let ob_option;
+        let ob_time;
+
+        //900 secondes  <=> 15 minutes
+        //on commence à minuit
+        //on suppose que une personne commence à travailler à partir de 08h00 (il faudra rendre ca paramétrable)
+        // => i =  8*4 = 32(debut)
+        // => i = 19*4 = 76(fin)
+        let str_color = "";
+
+        for (let i = 1; i < 96; i++){
+            int_horaire = int_horaire + 900;
+
+            str_color = "bg-primary text-white";
+
+            if((i < 32) || (i > 76)){
+                str_color = "bg-secondary text-white";
+            }
+
+            ob_time = new Heure(int_horaire);
+            ob_option = new Dom("option","",str_color,ob_time.secondeToHourString(),{"value":int_horaire.toString()});
+            dom_option = ob_option.getAttribute();
+            dom_select.append(dom_option);
+            return dom_select;
+        }
 
     }
 

@@ -1,6 +1,85 @@
 
 let dom_agendaCorp = document.getElementById("agenda_corps");
 
+
+class Heure
+{
+    int_seconde = 0;
+    int_minute = 0;
+    int_heure = 0;
+
+    constructor(int_seconde,int_minute,int_heure){
+        if(typeof(int_seconde) != "undefined"){
+            this.int_seconde = int_seconde;
+        }
+
+        if(typeof(int_minute) != "undefined"){
+            this.int_minute = int_minute;
+        }
+
+        if(typeof(int_seconde) != "undefined"){
+            this.int_seconde = int_seconde;
+        }
+    }
+
+    secondeToHour() {
+
+    
+        let str_minute = "00";
+        let str_hour = "00";
+        let str_seconde = "00";
+    
+        if (this.int_seconde > 59) {
+            //quotient de la division euclidienne
+            this.int_minute = Math.floor(this.int_seconde / 60);
+            //le reste est toujours inférieur au diviseur
+            this.int_seconde = this.int_seconde % 60
+    
+            str_seconde = this.int_seconde.toString();
+        }
+    
+        if (this.int_minute > 59) {
+            this.int_heure = Math.floor(this.int_minute / 60);
+            this.int_minute = this.int_minute % 60;
+    
+            str_minute = this.int_minute.toString();
+            str_hour = this.int_heure.toString();
+        } else {
+            str_minute = this.int_minute.toString();
+        }
+    
+        if (this.int_minute < 10) {
+            str_minute = "0" + this.int_minute.toString();
+        }
+    
+        if (this.int_heure < 10) {
+            str_hour = "0" + this.int_heure.toString();
+        }
+    
+        if (this.int_seconde < 10) {
+            str_seconde = "0" + this.int_seconde.toString(); 
+        }
+    
+        const str_return = str_hour + ":" + str_minute + ":" + str_seconde
+    
+        const ob_return = {
+            "heure": this.int_heure,
+            "minute": this.int_minute,
+            "seconde": this.int_seconde,
+            "str" :str_return
+        }
+    
+        return ob_return;
+    }
+
+    secondeToHourString(){
+        const ob_horaire = this.secondeToHour();
+        return ob_horaire.heure.toString() + " : " + ob_horaire.minute.toString();
+    }
+
+
+}
+
 class Jour
 {
     int_annee;
@@ -238,7 +317,7 @@ class Mois
     }
 }
 
-export { Jour, Semaine, Mois };
+export { Jour, Semaine, Mois, Heure };
 
 
 
