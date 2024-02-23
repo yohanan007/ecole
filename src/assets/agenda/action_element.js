@@ -1,12 +1,21 @@
-import { Dom, Card, Nav, Element } from "../utilitaire/element";
+import { Dom, Card, Nav } from "../utilitaire/element";
 import { Heure } from "./agenda";
+import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
+import { Essentials } from '@ckeditor/ckeditor5-essentials';
+import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
+import { Bold, Italic } from '@ckeditor/ckeditor5-basic-styles';
+import { BlockQuote } from '@ckeditor/ckeditor5-block-quote';
+import { Heading } from '@ckeditor/ckeditor5-heading';
+import { Link } from '@ckeditor/ckeditor5-link';
+import { List } from '@ckeditor/ckeditor5-list';
+import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
 
 
 class ActionElementAgenda{
 
     int_time = new Date().getTime();
     str_typeElement = "button";
-    obj_element = new Element();
+    obj_element;
 
     constructor(str_typeElement,int_time,obj_element){
         if(typeof(str_typeElement)!= "undefined"){
@@ -53,18 +62,16 @@ class ActionElementAgenda{
             }], this.str_idElment,"",this.int_time.toString());
 
         const dom_nav_master_menu = obj_nav.getNav();
-
-        const dom_div_support = document.createElement("div");
-        dom_div_support.setAttribute("class", "container-fluid");
+        const ob_divSupport = new Dom("div","","container-fluid","");
+        const dom_div_support = ob_divSupport.getAttribute();
+        
         dom_nav_master_menu.append(dom_div_support);
         return dom_nav_master_menu;
     }
 
-    getButton(){
-        const dom_button = document.createElement("button");
-        this.obj_element.setClasse(this.obj_element.getClass() + " btn btn-secondary btn-lg");
-        const obj_dom = new Dom(this.obj_element,dom_button);
-        dom_button = obj_dom.getAttribute();
+    getButton(str_id,str_text){
+        const ob_button = new Dom(this.str_typeElement,str_id,"btn btn-secondary btn-lg",str_text,this.obj_element)
+        const dom_button = ob_button.getAttribute();
         return dom_button;
     }
 
@@ -73,8 +80,8 @@ class ActionElementAgenda{
     }
 
 
-    getSelectHoraire(str_time){
-        const id_select = "select_" + id + "_" + str_time;
+    getSelectHoraire(){
+        const id_select = "select_horaire";
         const ob_select = new Dom("select",id_select,"form-select","",{"name":"select_horaire"})
         const dom_select = ob_select.getAttribute();
 
@@ -105,8 +112,81 @@ class ActionElementAgenda{
             dom_select.append(dom_option);
             return dom_select;
         }
-
     }
 
+    getCard() {
+        const id_header = "header_card_agenda";
+        const id_body = "body_card_agenda";
+        const id_footer = "footer_card_agenda";
     
+        const obj_header = {
+            "color_text": "bg-primary",
+            "text": "",
+            "id" : id_header
+        }
+    
+        const obj_body = {
+            "color_text": "bg-primary",
+            "text": "RENDEZ-VOUS",
+            "id":id_body
+        }
+    
+        const obj_footer = {
+            "color_text": "bg-dark",
+            "text": " ",
+            "id":id_footer
+        }
+    
+        const cardClass = new Card(obj_header, obj_body, obj_footer);
+        const cardDom = cardClass.getCreateCard();
+        return cardDom;
+    }
+
+
+    async getClassicEditor(){
+        ClassicEditor
+        .create(document.querySelector('#editor'), {
+            plugins: [ Essentials,
+                Autoformat,
+                Bold,
+                Italic,
+                BlockQuote,
+                Heading,
+                Link,
+                List,
+                Paragraph,],
+            toolbar: [
+                'heading',
+                'bold',
+                'italic',
+                'link',
+                'bulletedList',
+                'numberedList',
+                'blockQuote',
+                'undo',
+                'redo'
+            ]
+        } )
+        .then( editor => {
+            console.log(editor);
+            return editor;
+        } )
+        .catch( error => {
+            console.error( error.stack );
+        });
+    }
+
+    getCardHeader(id_header){
+        const dom_headerCArd = document.getElementById(id_header);
+        const dom_navigate = this.getNavigate();
+        dom_headerCArd.append(dom_navigate);
+        return dom_headerCArd;
+    }
+
+
+    getElementClass(){
+        return [];
+    }
 }
+
+export {ActionElementAgenda};
