@@ -1,6 +1,95 @@
 
 let dom_agendaCorp = document.getElementById("agenda_corps");
 
+
+class Heure
+{
+    int_seconde = 0;
+    int_minute = 0;
+    int_heure = 0;
+
+    constructor(int_seconde,int_minute,int_heure){
+        if(typeof(int_seconde) != "undefined"){
+            this.int_seconde = int_seconde;
+        }
+
+        if(typeof(int_minute) != "undefined"){
+            this.int_minute = int_minute;
+        }
+
+        if(typeof(int_seconde) != "undefined"){
+            this.int_seconde = int_seconde;
+        }
+    }
+
+    secondeToHour() {
+
+    
+        let str_minute = "00";
+        let str_hour = "00";
+        let str_seconde = "00";
+    
+        if (this.int_seconde > 59) {
+            //quotient de la division euclidienne
+            this.int_minute = Math.floor(this.int_seconde / 60);
+            //le reste est toujours inférieur au diviseur
+            this.int_seconde = this.int_seconde % 60
+    
+            str_seconde = this.int_seconde.toString();
+        }
+    
+        if (this.int_minute > 59) {
+            this.int_heure = Math.floor(this.int_minute / 60);
+            this.int_minute = this.int_minute % 60;
+    
+            str_minute = this.int_minute.toString();
+            str_hour = this.int_heure.toString();
+        } else {
+            str_minute = this.int_minute.toString();
+        }
+    
+        if (this.int_minute < 10) {
+            str_minute = "0" + this.int_minute.toString();
+            if(this.int_minute == 0){
+                str_minute = "00";
+            }
+        }
+    
+        if (this.int_heure < 10) {
+
+            str_hour = "0" + this.int_heure.toString();
+            if(this.int_heure == 0){
+                str_hour = "00";
+            }
+        }
+    
+        if (this.int_seconde < 10) {
+            str_seconde = "0" + this.int_seconde.toString();
+            if(this.int_seconde == 0){
+                str_seconde = "00";
+            }
+        }
+    
+        const str_return = str_hour + ":" + str_minute + ":" + str_seconde
+    
+        const ob_return = {
+            "heure": this.int_heure,
+            "minute": this.int_minute,
+            "seconde": this.int_seconde,
+            "str" :str_return
+        }
+    
+        return ob_return;
+    }
+
+    secondeToHourString(){
+        const ob_horaire = this.secondeToHour();
+        return ob_horaire.str;
+    }
+
+
+}
+
 class Jour
 {
     int_annee;
@@ -17,7 +106,7 @@ class Jour
         this.int_annee = int_annee;
         this.int_mois = int_mois;
         this.int_jour = int_jour;
-        //int_mois = int_mois - 1;
+
         this.d_jour = new Date(int_annee, int_mois, int_jour);
     }
 
@@ -38,7 +127,12 @@ class Jour
 
     getMois()
     {
-        return this.d_jour.getUTCMonth();
+        return this.d_jour.getMonth();
+    }
+
+    getMoisFrancais()
+    {
+        return this.d_jour.getMonth()+1;
     }
 
     getAnnee()
@@ -110,7 +204,6 @@ class Semaine
         {
             this.arj_jour = arj_jour;
         }
-        
     }
 
     addJour(j_temp)
@@ -142,7 +235,6 @@ class Semaine
                 this.arj_jour.push(new Jour(int_dayOfMonth, int_monthOfYear, int_annee));
                 }
         }
-
         return this.arj_jour;
     }
 }
@@ -162,15 +254,16 @@ class Mois
         }
 
         if (typeof int_mois === "undefined") {
-            int_mois = d_now.getMonth();
-            int_mois = int_mois + 1;
+            int_mois = d_now.getMonth();   
         }
 
         if (typeof int_jour === "undefined") {
             int_jour = d_now.getUTCDate();
         }
+
         //les mois vont de 0 à 11
         int_mois = int_mois - 1;
+
         this.j_day = new Jour(int_jour, int_mois, int_annee);
     }
 
@@ -195,13 +288,13 @@ class Mois
 
         int_mois = this.j_day.getMois();
         int_annee = this.j_day.getAnnee();
+
         //dans un premier temps on intégre la semaine comportant
         //le debut du mois
-        
         sem_debutMois = new Semaine();
         this.arj_mois = sem_debutMois.getSemaine(new Jour(1,int_mois,int_annee));
         i_last = 0;
-        for (let i = 1; i < 34; i++)
+        for (let i = 1; i < 36; i++)
         {
             j_temp = new Jour(i, int_mois, int_annee);
             int_moisTemp = j_temp.getMois();
@@ -217,7 +310,7 @@ class Mois
             }
         }
 
-        if (i_lastDay !== 6) {
+        if ((i_lastDay !== 6) | (d_.getMonth() !== int_mois)){
             i_lastDay = i_lastDay + 1;
             for (let k = i_lastDay; k < 7; k++){ 
                 d_ = new Date(int_annee, int_mois, i_last);
@@ -233,12 +326,12 @@ class Mois
         this.arj_mois = this.arj_mois.sort(function (a, b) {
             return (a.getTime() > b.getTime())
         });
-
+        console.log(this.arj_mois);
         return this.arj_mois;
     }
 }
 
-export { Jour, Semaine, Mois };
+export { Jour, Semaine, Mois, Heure };
 
 
 

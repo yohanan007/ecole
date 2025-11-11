@@ -5,31 +5,21 @@ namespace App\Entity;
 use App\Repository\OptionEleveRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=OptionEleveRepository::class)
- */
+#[ORM\Entity(repositoryClass: OptionEleveRepository::class)]
 class OptionEleve
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Option::class, inversedBy="eleve")
-     */
+    #[ORM\ManyToOne(targetEntity: Option::class, inversedBy: 'eleve')]
     private $optionEleve;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Eleve::class, inversedBy="optionEleves")
-     */
+    #[ORM\ManyToOne(targetEntity: Eleve::class, inversedBy: 'optionEleves')]
     private $eleve;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $valide;
 
     public function getId(): ?int
@@ -45,7 +35,6 @@ class OptionEleve
     public function setOptionEleve(?Option $optionEleve): self
     {
         $this->optionEleve = $optionEleve;
-
         return $this;
     }
 
@@ -57,7 +46,6 @@ class OptionEleve
     public function setEleve(?Eleve $eleve): self
     {
         $this->eleve = $eleve;
-
         return $this;
     }
 
@@ -69,7 +57,6 @@ class OptionEleve
     public function setValide(\DateTimeInterface $valide): self
     {
         $this->valide = $valide;
-
         return $this;
     }
 }

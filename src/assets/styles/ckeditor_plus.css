@@ -627,6 +627,13 @@
 .ck-content .table {
     width: auto;
 }
+.fc-event {
+  cursor: pointer; /* flèche standard */
+}
+
+.fc-daygrid-day-frame {
+  cursor: pointer; /* pour les cases du calendrier */
+}
 
 @media print {
 

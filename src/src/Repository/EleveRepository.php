@@ -7,6 +7,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Clock\Clock;
+use App\Entity\Classe;
 
 /**
  * @extends ServiceEntityRepository<Eleve>
@@ -45,6 +47,21 @@ class EleveRepository extends ServiceEntityRepository
         if ($flush) {
             $this->_em->flush();
         }
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function findEleveByClasse($classe){
+        return $this->createQueryBuilder('e')
+            ->innerJoin('e.classeEleves','ce')
+            ->innerJoin('ce.classe','c')
+            ->where('c.id = :classe')
+            ->setParameter('classe',intval($classe))
+            ->getQuery()
+            ->getResult()
+            ;
     }
 
     // /**

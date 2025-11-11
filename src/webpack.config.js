@@ -27,10 +27,15 @@ Encore
      */
     .addEntry('app', './assets/app.js')
     .addEntry('eleve', './assets/eleve/eleve.js')
+    .addEntry('eleve_action', './assets/eleve/action_eleve.js')
     .addEntry('niveau', './assets/niveau/niveau.js')
     .addEntry('utilitaire', './assets/utilitaire/element.js')
+    .addEntry('utilitaire_agenda', './assets/utilitaire/agenda.js')
+
+    .addEntry('envoi_utilitaire', './assets/utilitaire/envoi_utilitaire.js')
     .addEntry('agenda', './assets/agenda/agenda.js')
     .addEntry('agenda_action', './assets/agenda/action.js')
+    .addEntry('agenda_create', './assets/agenda/create.js')
     //.addEntry('ckeditor-base', './assets/utilitaire/ckeditor_utilitaire.js')
     
     //.addStyleEntry('ckeditor-style', './assets/styles/ckeditor_plus.css')

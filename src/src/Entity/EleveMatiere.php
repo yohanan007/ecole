@@ -7,31 +7,21 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=EleveMatiereRepository::class)
- */
+#[ORM\Entity(repositoryClass: EleveMatiereRepository::class)]
 class EleveMatiere
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
     private $id;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Matiere::class, mappedBy="eleveMatiere")
-     */
+    #[ORM\OneToMany(targetEntity: Matiere::class, mappedBy: "eleveMatiere")]
     private $matiere;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Eleve::class, mappedBy="eleveMatiere")
-     */
+    #[ORM\OneToMany(targetEntity: Eleve::class, mappedBy: "eleveMatiere")]
     private $Eleve;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: "datetime", nullable: true)]
     private $principale;
 
     public function __construct()
