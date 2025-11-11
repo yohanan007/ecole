@@ -7,41 +7,25 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=AgendaRepository::class)
- */
+#[ORM\Entity(repositoryClass: AgendaRepository::class)]
 class Agenda
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $heure_debut;
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $heureDebut = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $heure_fin;
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $heureFinReccurence = null;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=User::class, inversedBy="agendas")
-     */
-    private $users;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=Evenement::class, mappedBy="horaires")
-     */
-    private $evenements;
+    #[ORM\OneToMany(mappedBy: "agenda", targetEntity: Evenement::class, orphanRemoval: true)]
+    private Collection $evenements;
 
     public function __construct()
     {
-        $this->users = new ArrayCollection();
         $this->evenements = new ArrayCollection();
     }
 
@@ -52,48 +36,24 @@ class Agenda
 
     public function getHeureDebut(): ?\DateTimeInterface
     {
-        return $this->heure_debut;
+        return $this->heureDebut;
     }
 
-    public function setHeureDebut(?\DateTimeInterface $heure_debut): self
+    public function setHeureDebut(?\DateTimeInterface $heureDebut): self
     {
-        $this->heure_debut = $heure_debut;
+        $this->heureDebut = $heureDebut;
 
         return $this;
     }
 
-    public function getHeureFin(): ?\DateTimeInterface
+    public function getHeureFinReccurence(): ?\DateTimeInterface
     {
-        return $this->heure_fin;
+        return $this->heureFinReccurence;
     }
 
-    public function setHeureFin(?\DateTimeInterface $heure_fin): self
+    public function setHeureFinReccurence(?\DateTimeInterface $heureFinReccurence): self
     {
-        $this->heure_fin = $heure_fin;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUsers(): Collection
-    {
-        return $this->users;
-    }
-
-    public function addUser(User $user): self
-    {
-        if (!$this->users->contains($user)) {
-            $this->users[] = $user;
-        }
-
-        return $this;
-    }
-
-    public function removeUser(User $user): self
-    {
-        $this->users->removeElement($user);
+        $this->heureFinReccurence = $heureFinReccurence;
 
         return $this;
     }
@@ -110,7 +70,7 @@ class Agenda
     {
         if (!$this->evenements->contains($evenement)) {
             $this->evenements[] = $evenement;
-            $evenement->addHoraire($this);
+            $evenement->setAgenda($this); // ✅ cohérent avec ManyToOne
         }
 
         return $this;
@@ -119,7 +79,10 @@ class Agenda
     public function removeEvenement(Evenement $evenement): self
     {
         if ($this->evenements->removeElement($evenement)) {
-            $evenement->removeHoraire($this);
+            // mettre à null seulement si c’était lié à cet agenda
+            if ($evenement->getAgenda() === $this) {
+                $evenement->setAgenda(null);
+            }
         }
 
         return $this;

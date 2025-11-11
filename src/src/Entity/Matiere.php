@@ -5,26 +5,18 @@ namespace App\Entity;
 use App\Repository\MatiereRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=MatiereRepository::class)
- */
+#[ORM\Entity(repositoryClass: MatiereRepository::class)]
 class Matiere
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: "string", length: 255)]
     private $nom;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=EleveMatiere::class, inversedBy="matiere")
-     */
+    #[ORM\ManyToOne(targetEntity: EleveMatiere::class, inversedBy: "matiere")]
     private $eleveMatiere;
 
     public function getId(): ?int

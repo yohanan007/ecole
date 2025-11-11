@@ -1,48 +1,37 @@
 {% extends 'base.html.twig' %}
 
-
-{% block title %}Agenda{% endblock %}
+{% block title %}Agenda scolaire{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-    .ck-editor {
-        color: var(--color);
-    }
-    
-    </style>
-</style>
+<div class="container-fluid wrapper">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">🗓️ Agenda scolaire</h5>
+                    <a href="{{ path('app_agenda_create') }}" class="btn btn-light btn-sm">
+                        ➕ Ajouter un événement
+                    </a>
+                </div>
 
-<div class="container">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-    <div class ="card">
-        <div class="card-header">
-            <p>Agenda</p>
-        </div>
-        <div class="card-body">
-            <div id="agenda_corps">
-                
+                <div class="card-body">
+                    <div id="agenda_corps" class="fc fc-theme-bootstrap5">
+                        <!-- FullCalendar will be injected here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Inputs cachés pour JS -->
+    <input type="hidden" id="action" value="agenda_corps">
+    <input type="hidden" id="agenda-data" value="{{ agenda|e('html_attr') }}">
+    <input type="hidden" id="token" value="{{ csrf_token('create-time') }}">
+    <input type="hidden" id="token_info_utilisateur" value="{{ csrf_token('info_data_eleve') }}">
 </div>
-
-<input id="day" type="hidden" value="{{ day }}">
-<input id="month" type="hidden" value="{{ month }}">
-<input id="year" type="hidden" value="{{ year }}">
-<input id="action" type="hidden" value="agenda_corps">
-<input id="format" type="hidden" value="{{ format }}">
-<input type="hidden" name="token" id="token" value="{{ csrf_token('create-time') }}">
-
-
-
-
 {% endblock %}
 
 {% block extraJs %}
-    {{ encore_entry_script_tags('utilitaire') }}
     {{ encore_entry_script_tags('agenda') }}
-    {{ encore_entry_script_tags('agenda_action') }}    
-
+    {{ encore_entry_script_tags('agenda_action') }}
 {% endblock %}

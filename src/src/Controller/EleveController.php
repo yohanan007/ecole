@@ -13,7 +13,7 @@ use App\Repository\UserRepository;
 use App\Repository\NiveauRepository;
 use App\Repository\ClasseRepository;
 use App\Repository\ClasseEleveRepository;
-use App\Repository\ParentEleveRepository;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\ClasseEleve;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,16 +21,18 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Context\Normalizer\ObjectNormalizerContextBuilder;
 
-/**
- * @Route("/eleve")
- */
+
+
+#[Route("/eleve")]
 class EleveController extends AbstractController
 {
-    /**
-     * @Route("/", name="app_eleve_index", methods={"GET"})
-     * @IsGranted("ROLE_USER")
-     */
+    
+     #[Route("/", name:"app_eleve_index", methods:["GET"])]
+     #[IsGranted("ROLE_USER")]
     public function index(EleveRepository $eleveRepository): Response
     {
         //utilisation de ternaire basique
@@ -53,10 +55,8 @@ class EleveController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/new", name="app_eleve_new", methods={"GET", "POST"})
-     * @IsGranted("ROLE_PARENT")
-     */
+     #[Route("/new", name:"app_eleve_new", methods:["GET", "POST"])]
+     #[IsGranted("ROLE_PARENT")]
     public function new(Request $request,ManagerRegistry $doctrine, EleveRepository $eleveRepository, NiveauRepository $niveauRepository, UserRepository $userRepository, ClasseEleveRepository $classeEleveRepository, ClasseRepository $classeRepository,UserPasswordHasherInterface $userPasswordHasher): Response
     {
         $eleve = new Eleve();
@@ -68,7 +68,7 @@ class EleveController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $t_email = $request->request->get('eleve')['user']['email'];
+            $t_email = $request->request->all('eleve')['user']['email'];
             $user->setEmail($t_email);
             $t_mdp =$this->genereMdp();
             $user->setPassword($userPasswordHasher->hashPassword(
@@ -79,7 +79,6 @@ class EleveController extends AbstractController
             $eleve->setUser($user);
             $eleveRepository->add($eleve);
             $id_classe = $request->request->get('classe_disponible');
-           
             
             if(!is_null($id_classe))
             {
@@ -107,16 +106,51 @@ class EleveController extends AbstractController
             return $this->redirectToRoute('app_parent_eleve_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('eleve/new.html.twig', [
+        return $this->render('eleve/new.html.twig', [
             'eleve' => $eleve,
             'niveaux' => $niveaux,
             'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="app_eleve_show", methods={"GET"})
-     */
+    #[Route("/list", name:"app_eleve_list", methods:["GET"])]
+    public function listEleve(Request $obj_request,ClasseRepository $obj_classeRepository,EleveRepository $obj_eleveRepository, SerializerInterface $obj_serializer) : Response
+    {
+        if($this->isCsrfTokenValid('info_data_eleve',$obj_request->query->get('info_data_eleve')))
+        {
+            $initialContext = [
+                'custom_key' => 'custom_value',
+            ];
+
+            $ob_context = (new ObjectNormalizerContextBuilder());
+
+
+            $arr_reponse = [];
+
+            if($obj_request->query->get('classe')){
+            //todo : à modifié selon droit utilisateur et demande
+            //voir pour passage à api
+
+                $context  = $ob_context->withGroups('list_eleve')
+                ->withContext($initialContext)
+                ->toArray();
+
+                $arr_reponse["data"] = $obj_eleveRepository->findEleveByClasse($obj_request->query->get('classe'));
+            }else{
+
+                $context = $ob_context->withGroups('list_class')
+                ->withContext($initialContext)
+                ->toArray();
+
+                $arr_reponse["data"] = $obj_classeRepository->findAll();
+            }
+            $t_data_ = $obj_serializer->serialize($arr_reponse,'json',$context);
+        }
+        
+        return JsonResponse::fromJsonString($t_data_);
+    }
+
+    #[Route("/{id}", name:"app_eleve_show", methods:["GET"])]
     public function show(Eleve $eleve): Response
     {
         return $this->render('eleve/show.html.twig', [
@@ -124,9 +158,7 @@ class EleveController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="app_eleve_edit", methods={"GET", "POST"})
-     */
+    #[Route("/{id}/edit", name:"app_eleve_edit", methods:["GET", "POST"])]
     public function edit(Request $request, Eleve $eleve, EleveRepository $eleveRepository): Response
     {
         $form = $this->createForm(EleveType::class, $eleve);
@@ -137,15 +169,13 @@ class EleveController extends AbstractController
             return $this->redirectToRoute('app_eleve_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('eleve/edit.html.twig', [
+        return $this->render('eleve/edit.html.twig', [
             'eleve' => $eleve,
             'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/{id}", name="app_eleve_delete", methods={"POST"})
-     */
+    #[Route("/{id}", name:"app_eleve_delete", methods:["POST"])]
     public function delete(Request $request, Eleve $eleve, EleveRepository $eleveRepository): Response
     {
         if ($this->isCsrfTokenValid('delete'.$eleve->getId(), $request->request->get('_token'))) {
@@ -237,4 +267,6 @@ class EleveController extends AbstractController
         return $t_mdp;
 
     }
+
+
 }
