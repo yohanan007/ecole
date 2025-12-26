@@ -31,9 +31,8 @@ class ParentEleveController extends AbstractController
         }
         else
         {
-            //dump($parentGenerator->getEleveParent());
                 return $this->render('parent_eleve/index.html.twig', [
-                'parent_eleves' => $parentGenerator->getEleveParent(),
+                'parent_eleves' => $parentGenerator->getParentCourant(),
             ]);        
         }
 
@@ -80,8 +79,9 @@ class ParentEleveController extends AbstractController
     }
 
     #[Route("/{id}", name:"app_parent_eleve_show", methods:["GET"])]
-    public function show(ParentEleve $parentEleve): Response
+    public function show(Request $request, ParentEleve $parentEleve): Response
     {
+        dump("show parent eleve");
         return $this->render('parent_eleve/show.html.twig', [
             'parent_eleve' => $parentEleve,
         ]);

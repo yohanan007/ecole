@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Repository\ParentEleveRepository;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 use App\Entity\User;
 
 
@@ -19,7 +19,7 @@ Class ParentGenerator{
         $this->user = $security->getUser();
    }
 
-   public function getParent(User $user = null)
+   public function getParent(?User $user = null)
    {
         $this->user = ($user == null) ? $this->user : $user;
         $ent_parent = $this->ParentRepository->findOneBy(array("user"=>$this->user));
@@ -27,21 +27,24 @@ Class ParentGenerator{
         return $ent_parent;
    }
 
-   public function isVerified(User $user = null)
+   public function isVerified(?User $user = null)
    {
-        $ent_parent = $this->getParent($user);
-        $b_verified = ($ent_parent == null) ? false : $this->user->isVerified();
-        return $b_verified;
+     $user = ($user == null) ? $this->user : $user;
+     $ent_parent = $this->getParent($user);
+     $b_verified = ($ent_parent == null) ? false : $ent_parent->getUser()->isVerified();
+     return $b_verified;
    }
 
-   public function getParentCourant()
+   public function getParentCourant(?User $user = null)
    {
-    return $this->ParentCourant;
+     $user = ($user == null) ? $this->user : $user;
+     return ($this->isVerified($user)) ? $this->ParentCourant : null;
    }
 
-   public function getEleveParent(User $user = null)
+   public function getEleveParent(?User $user = null)
    {
-       return  ($this->isVerified($user)) ? $this->ParentCourant->getEnfant() : null;
+     $user = ($user == null) ? $this->user : $user;
+     return  ($this->isVerified($user)) ? $this->ParentCourant->getEnfant() : null;
    }
 
 }
