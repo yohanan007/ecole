@@ -24,7 +24,7 @@ class HomeController extends AbstractController
     #[Route("/parametre", name:"app_parametre")]
     public function getParametre(): Response 
     {
-        $user = $this->get('security.token_storage')->getToken()->getUser();
+        $user = $this->getUser();
         return $this->render('home/parametre.html.twig', [
         'user' => $user,
         ]);

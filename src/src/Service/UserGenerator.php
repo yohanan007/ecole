@@ -2,27 +2,25 @@
 
 namespace App\Service;
 
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 use App\Entity\User;
 
 class UserGenerator{
 
     private $user; 
-    private $security;
 
     public function __construct(Security $security)
     {
         $this->user = $security->getUser();
-        $this->security = $security;
     }
 
-    private function getUser(User $user = null)
+    private function getUser(?User $user = null)
     {
         $this->user = (is_null($user))? $this->user : $user;
         return $this->user;
     }
 
-    public function isAdmin(User $user = null)
+    public function isAdmin(?User $user = null)
     {
         $b_isAdmin = false;
         if(!(is_null($this->getUser($user))))
