@@ -2,86 +2,123 @@
 
 namespace App\Service;
 
-
-/***
- * gestion des agendas en back
- */
 use App\Repository\AgendaRepository;
-use Symfony\Component\Security\Core\Security;
-use App\Entity\User;
-use Doctrine\ORM\Query\Expr\Func;
-use Symfony\Component\Validator\Constraints\DateTime;
 
-Class AgendaGenerator{
-
+class AgendaGenerator
+{
     private $agendaRepository;
     private $d_dateDuJour;
 
-    function __construct(AgendaRepository $agendaRepository){
+    public function __construct(AgendaRepository $agendaRepository)
+    {
         $this->agendaRepository = $agendaRepository;
         $this->d_dateDuJour = new \DateTime("now");
     }
 
-    public function NextDateAgenda(){
-        //reflechir pour grouper les utilisateurs
+    /**
+     * Génère les prochaines dates pour les agendas à venir.
+     *
+     * @return array
+     */
+    public function NextDateAgenda(): array
+    {
         $agendas = $this->agendaRepository->getAgendaAVenir();
         $arr_sortie = [];
-        foreach($agendas as $agenda){
+        
+
+        foreach ($agendas as $agenda) {
+
+            // Génère les dates en fonction de la récurrence
             $d_init = $agenda['heureDebut'];
             $recurrence = $agenda['recurrence'];
-            $arr_date = $this->nextItemByRecurrence($recurrence,$d_init);
-            // On ajoute les informations de l'agenda à chaque date
-            foreach ($arr_date as &$date) {
-                    $date = array_merge($date, [
-                        'titre'   => $agenda['sujet'],
-                        'corps'   => $agenda['corps'],
-                        'lieu'    => $agenda['lieu'],
-                        'duree'   => $agenda['duree'],
-                        'nom'     => $agenda['nom'],
-                        'prenom'  => $agenda['prenom'],
-                    ]);
-                }
-            
-                unset($date); // bonne pratique pour éviter un bug lié à la référence
+            $arr_date = $this->nextItemByRecurrence($recurrence, $d_init);
+            $eventId = $agenda['evenement_id'];
+        
 
-            // On associe les résultats à l'id de l'agenda
-            $arr_temp = [];
-            $arr_temp[$agenda['id']] = $arr_date;
-            $arr_sortie[] = $arr_temp;
+
+            foreach ($arr_date as $date) {
+                if (!isset($arr_sortie[$eventId])) {
+                    $arr_sortie[$eventId] = [
+                        'title' => $agenda['sujet'],
+                        'recurrence' => $agenda['recurrence'],
+                        'corps' => $agenda['corps'],
+                        'lieu' => $agenda['lieu'],
+                        'duree' => $agenda['duree'],
+                        'dates' => [],
+                        'eleves' => [],
+                    ];
+                }
+                if ($date['date'] < $this->d_dateDuJour) {
+                    continue; // Ignore les dates passées
+                }
+
+                $arr_sortie[$eventId]['dates'][] = [
+                    'date' => $date['date']->format('Y-m-d H:i:s'),
+                    'date_init' => $d_init->format('Y-m-d H:i:s'),
+                ];
+
+
+
+                if (!in_array([
+                    'id' => $agenda['eleve_id'],
+                    'nom' => $agenda['eleve_nom'],
+                    'prenom' => $agenda['eleve_prenom'],
+                ], $arr_sortie[$eventId]['eleves'])) {
+
+                    $arr_sortie[$eventId]['eleves'][] = [
+                        'id' => $agenda['eleve_id'],
+                        'nom' => $agenda['eleve_nom'],
+                        'prenom' => $agenda['eleve_prenom'],
+                    ];
+                }
+            }
         }
-        return $arr_sortie;
+        
+        return array_values($arr_sortie);
     }
 
-    public function nextItemByRecurrence($recurrence,$d_init,$d_close = null){
-        //par default on met une date de fin à 7 mois
+    /**
+     * Génère les prochaines occurrences d'une date en fonction de la récurrence.
+     *
+     * @param string $recurrence
+     * @param \DateTime $d_init
+     * @param \DateTime|null $d_close
+     * @return array
+     */
+    public function nextItemByRecurrence(string $recurrence, \DateTime $d_init, ?\DateTime $d_close = null): array
+    {
+        // Par défaut, on met une date de fin à 7 mois
         $d_suivant = clone $d_init;
-        $d_close = is_null($d_close) ? $d_init->add(new \DateInterval('P7M')) : $d_close;
-        $arr_date = [];
-        $arr_date[] = ["date" => clone $d_suivant];
-        switch($recurrence){
-            case "jour":
-                $di = new \DateInterval('P1D');
-                break;
-            case "semaine":
-                $di = new \DateInterval('P1W');
-                break;
-            case "deuxSemaines":
-                $di = new \DateInterval('P2W');
-                break;
-            case "mois":
-                $di = new \DateInterval('P1M');
-                break;
-            default:
-                $d_close = $d_suivant;
-                break;
-        }
+        $d_close = $d_close ?? (clone $d_init)->add(new \DateInterval('P7M'));
+        $arr_date = [["date" => clone $d_suivant]];
 
-        for($i=1;$d_suivant < $d_close;$i++){
-                $d_suivant = $d_suivant->add($di);
-                $arr_date[] =["date" => clone $d_suivant];
+        // Détermine l'intervalle en fonction de la récurrence
+        $di = $this->getDateIntervalByRecurrence($recurrence);
+
+        // Génère les dates jusqu'à la date de fin
+        while ($d_suivant < $d_close) {
+            $d_suivant = $d_suivant->add($di);
+            $arr_date[] = ["date" => clone $d_suivant];
         }
 
         return $arr_date;
+    }
+
+    /**
+     * Retourne l'intervalle de temps en fonction de la récurrence.
+     *
+     * @param string $recurrence
+     * @return \DateInterval
+     */
+    private function getDateIntervalByRecurrence(string $recurrence): \DateInterval
+    {
+        return match ($recurrence) {
+            "jour" => new \DateInterval('P1D'),
+            "semaine" => new \DateInterval('P1W'),
+            "deuxSemaines" => new \DateInterval('P2W'),
+            "mois" => new \DateInterval('P1M'),
+            default => new \DateInterval('P0D'), // Aucun intervalle
+        };
     }
 
     public function UserIsFres($user,$agenda){

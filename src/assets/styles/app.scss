@@ -82,5 +82,87 @@ html, body {
     }
   }
 
+.fc-event-content-custom {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
 
-  
+.fc-event-lieu {
+  font-weight: bold;
+  color: #333;
+}
+
+.fc-event-description {
+  color: #555;
+}
+
+.fc-event-eleves {
+  color: #777;
+  font-style: italic;
+}
+
+.fc-event-time {
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 4px;
+}
+
+/* Empêche FullCalendar de centrer verticalement les events */
+.fc-daygrid-day-events {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Force les events à se coller sous la date */
+.fc-daygrid-event-harness {
+  margin-top: 0 !important;
+}
+
+/* Supprime le rendu natif de FullCalendar (heure + titre) */
+.fc-daygrid-event .fc-event-main {
+  display: none !important;
+}
+
+/* Ton rendu custom prend toute la place */
+.fc-event-custom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 2px 4px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+/* Ligne heure + titre */
+.fc-event-header {
+  display: flex;
+  align-items: start;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.fc-event-time {
+  color: #007bff;
+  margin-right: 4px;
+}
+
+.fc-event-title {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Détails */
+.fc-event-lieu {
+  font-weight: bold;
+  color: #333;
+}
+
+.fc-event-description {
+  color: #555;
+}
+
+.fc-event-eleves {
+  color: #777;
+  font-style: italic;
+}

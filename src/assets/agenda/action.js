@@ -25,13 +25,16 @@ obj_action.generateMois = function(coll_agenda) {
       if(typeof coll_agenda !== "undefined"){
         if(coll_agenda.length > 0){
             coll_agenda.forEach(element => {
-                for(let key in element){
-                  //key <=> id de l'évenement
-                  element[key].forEach(item => {
-                    //un item correspond à un evenement
-                    agenda.addDate(item);
-                  });
-                }
+                const base = { title: element.title,
+                    lieu: element.lieu,
+                    description: element.description,
+                    classe: element.classe, 
+                    eleves: element.eleves,
+                    duree: element.duree };
+                element.dates.forEach(item => {
+                    const payload = { ...base, date: item };
+                    agenda.addDate(payload);
+                });
             });
         }else{
             console.log("agenda vide");
