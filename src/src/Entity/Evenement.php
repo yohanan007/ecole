@@ -33,13 +33,44 @@ class Evenement
     #[ORM\Column(type:"string", length: 50, nullable:true)]
     private ?string $recurrence = null;
 
+    // ✅ Parent-Child Pattern
+    #[ORM\ManyToOne(targetEntity: Evenement::class, inversedBy: "occurrences")]
+    #[ORM\JoinColumn(nullable: true, onDelete: "CASCADE")]
+    private ?Evenement $parent = null;
+
+    #[ORM\OneToMany(mappedBy: "parent", targetEntity: Evenement::class, orphanRemoval: true, cascade: ["persist", "remove"])]
+    #[ORM\OrderBy(["heureDebut" => "ASC"])]
+    private Collection $occurrences;
+
+    // ✅ Date de début (remplace Agenda.heureDebut)
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $heureDebut = null;
+
+    // ✅ Date de fin de récurrence (optionnel)
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $recurrenceEnd = null;
+
     #[ORM\ManyToOne(targetEntity: Agenda::class, inversedBy: "evenements")]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Agenda $agenda = null;
+
+    /**
+     * Admin qui a créé cet RDV
+     */
+    #[ORM\ManyToOne(targetEntity: Admin::class, inversedBy: "evenementsCreated")]
+    #[ORM\JoinColumn(name: "admin_createur_id", referencedColumnName: "id", nullable: true)]
+    private ?Admin $adminCreateur = null;
+
+    /**
+     * Date de création du RDV
+     */
+    #[ORM\Column(type: "datetime")]
+    private ?\DateTimeInterface $createdAt = null;
 
     public function __construct()
     {
         $this->users = new ArrayCollection();
+        $this->occurrences = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -140,6 +171,100 @@ class Evenement
     {
         $this->agenda = $agenda;
 
+        return $this;
+    }
+
+    public function getAdminCreateur(): ?Admin
+    {
+        return $this->adminCreateur;
+    }
+
+    public function setAdminCreateur(?Admin $adminCreateur): self
+    {
+        $this->adminCreateur = $adminCreateur;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    // ✅ PARENT-CHILD PATTERN METHODS
+
+    public function getParent(): ?Evenement
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?Evenement $parent): self
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
+    public function isParent(): bool
+    {
+        return $this->parent === null && !empty($this->recurrence) && $this->recurrence !== 'aucune';
+    }
+
+    public function isOccurrence(): bool
+    {
+        return $this->parent !== null;
+    }
+
+    /**
+     * @return Collection<int, Evenement>
+     */
+    public function getOccurrences(): Collection
+    {
+        return $this->occurrences;
+    }
+
+    public function addOccurrence(Evenement $occurrence): self
+    {
+        if (!$this->occurrences->contains($occurrence)) {
+            $this->occurrences[] = $occurrence;
+            $occurrence->setParent($this);
+        }
+        return $this;
+    }
+
+    public function removeOccurrence(Evenement $occurrence): self
+    {
+        if ($this->occurrences->removeElement($occurrence)) {
+            if ($occurrence->getParent() === $this) {
+                $occurrence->setParent(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getHeureDebut(): ?\DateTimeInterface
+    {
+        return $this->heureDebut;
+    }
+
+    public function setHeureDebut(?\DateTimeInterface $heureDebut): self
+    {
+        $this->heureDebut = $heureDebut;
+        return $this;
+    }
+
+    public function getRecurrenceEnd(): ?\DateTimeInterface
+    {
+        return $this->recurrenceEnd;
+    }
+
+    public function setRecurrenceEnd(?\DateTimeInterface $recurrenceEnd): self
+    {
+        $this->recurrenceEnd = $recurrenceEnd;
         return $this;
     }
 }

@@ -3,47 +3,40 @@
 namespace App\Form;
 
 use App\Entity\Eleve;
-use App\Entity\Classe;
-use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Doctrine\ORM\EntityRepository;
 
-class EleveType extends AbstractType
+class UpdateEleveType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('user', UserType::class, [
-                'label' => 'Informations de connexion',
-            ])
             ->add('nom', TextType::class, [
                 'label' => 'Nom',
                 'required' => false,
-                'attr' => ['placeholder' => 'Nom de l\'élève']
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Votre nom']
             ])
             ->add('prenom', TextType::class, [
                 'label' => 'Prénom',
                 'required' => true,
-                'attr' => ['placeholder' => 'Prénom de l\'élève']
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Votre prénom']
             ])
             ->add('adresse', TextType::class, [
                 'label' => 'Adresse',
                 'required' => true,
-                'attr' => ['placeholder' => 'Adresse complète']
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Votre adresse complète']
             ])
             ->add('telephone', TelType::class, [
                 'label' => 'Téléphone',
                 'required' => true,
-                'attr' => ['placeholder' => '+33 6 XX XX XX XX']
+                'attr' => ['class' => 'form-control', 'placeholder' => '0X XX XX XX XX']
             ])
             ->add('save', SubmitType::class, [
-                'label' => 'Enregistrer l\'élève',
+                'label' => 'Enregistrer les modifications',
                 'attr' => ['class' => 'btn btn-primary']
             ])
         ;
@@ -53,10 +46,6 @@ class EleveType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Eleve::class,
-            // enable/disable CSRF protection for this form
-            'csrf_protection' => true,
-            // the name of the hidden HTML field that stores the token
-            'csrf_field_name' => 'token',
         ]);
     }
 }

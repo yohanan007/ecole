@@ -1,0 +1,158 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon agenda{% endblock %}
+
+{% block body %}
+<main class="container-fluid my-4">
+    <div class="row">
+        <!-- Header -->
+        <div class="col-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2">📅 Mon agenda</h1>
+                    <p class="text-muted">{{ app.user.email }}</p>
+                </div>
+                <div>
+                    <a href="{{ path('app_agenda') }}" class="btn btn-secondary me-2">
+                        <i class="bi bi-arrow-left me-1"></i>Agenda général
+                    </a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_agenda_create') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>Créer un RDV
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Calendrier -->
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📆 Votre calendrier</h5>
+                </div>
+                <div class="card-body">
+                    <div id="my-agenda-corps"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar - Prochains RDVs -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">📌 Prochains RDVs</h6>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    {% if agendaArray|length > 0 %}
+                        <div class="list-group list-group-flush">
+                            {% for event in agendaArray %}
+                                <a href="#" class="list-group-item list-group-item-action" data-event-id="{{ event.id }}">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ event.title }}</h6>
+                                            <small class="text-muted d-block">
+                                                {% if event.dates|length > 0 %}
+                                                    {{ event.dates[0].date|date('d/m à H:i') }}
+                                                {% else %}
+                                                    Date non définie
+                                                {% endif %}
+                                            </small>
+                                            {% if event.lieu %}
+                                                <small class="text-info">📍 {{ event.lieu }}</small>
+                                            {% endif %}
+                                        </div>
+                                        <i class="bi bi-chevron-right text-muted"></i>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">Aucun RDV prévu</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">📊 Statistiques</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Total RDVs</span>
+                            <strong>{{ agendaArray|length }}</strong>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Ce mois</span>
+                            <strong id="current-month-count">-</strong>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between">
+                            <span>Prochains 7j</span>
+                            <strong id="next-week-count">-</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Hidden data for calendar initialization -->
+<div id="my-agenda-data" style="display: none;">
+    {{- agenda|raw -}}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize calendar for personal agenda
+    const agendaData = document.getElementById('my-agenda-data').textContent;
+    
+    if (agendaData && window.Agenda) {
+        try {
+            const agenda = new window.Agenda({
+                calenderId: 'my-agenda-corps',
+                locale: 'fr',
+                initialEvents: JSON.parse(agendaData)
+            });
+            
+            // Update statistics
+            const events = JSON.parse(agendaData);
+            const now = new Date();
+            const currentMonth = events.filter(e => {
+                if (!e.start) return false;
+                const eventDate = new Date(e.start);
+                return eventDate.getMonth() === now.getMonth() && 
+                       eventDate.getFullYear() === now.getFullYear();
+            });
+            
+            const nextWeek = events.filter(e => {
+                if (!e.start) return false;
+                const eventDate = new Date(e.start);
+                const weekFromNow = new Date();
+                weekFromNow.setDate(weekFromNow.getDate() + 7);
+                return eventDate >= now && eventDate <= weekFromNow;
+            });
+            
+            document.getElementById('current-month-count').textContent = currentMonth.length;
+            document.getElementById('next-week-count').textContent = nextWeek.length;
+        } catch (e) {
+            console.error('Failed to initialize personal calendar:', e);
+        }
+    }
+});
+</script>
+
+{{ encore_entry_script_tags('agenda') }}
+{{ encore_entry_script_tags('agenda_action') }}
+{% endblock %}

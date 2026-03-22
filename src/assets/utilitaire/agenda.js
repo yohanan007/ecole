@@ -67,10 +67,14 @@ export default class Agenda {
 
     if (!calendarEl) {
       console.error(`❌ Élément avec l'ID "${this.elementId}" introuvable.`);
-      return;
+      return null;
     }
 
     const arr_event = this.toEvent(evenements);
+
+    if (!this.calendar && !Array.isArray(arr_event)) {
+      console.warn('⚠️ Pas d\'événements à afficher');
+    }
 
     try {
       const joursFeries = {
@@ -94,9 +98,26 @@ export default class Agenda {
         initialView: initialView,
         initialDate: new Date(),
         events: arr_event,
+        dayMaxEvents: 1,
+        dayMaxEventRows: 1,
+        moreLinkClick: (info) => {
+          // ✅ Le click "more" fonctionne UNIQUEMENT en vue mensuelle
+          if (this.calendar.view.type === 'dayGridMonth') {
+            this.calendar.changeView('dayGridDay', info.date);
+          }
+          return false;
+        },
 
         dateClick: info => {
           this.calendar.changeView('dayGridDay', info.date);
+        },
+
+        eventClick: info => {
+          const eventId = info.event.extendedProps.id;
+          if (eventId) {
+            // Naviguer vers la page de détails de l'événement
+            window.location.href = `/agenda/${eventId}`;
+          }
         },
 
         dayCellDidMount: function(arg) {
@@ -106,38 +127,124 @@ export default class Agenda {
 
           const b_sunday = date.getDay() === 1;  // 0=Dim,1=Lun,...6=Sam On décale d’un jour l'action se deroule aprés l'apparition du jour
 
-          const str_label = b_sunday ? "Jour férié" : `🎉(${joursFeries[key]})`;
+          const str_label = b_sunday ? "Jour férié" : `🎉 ${joursFeries[key]}`;
 
           if (joursFeries[key] || b_sunday) {
             const top = arg.el.querySelector('.fc-daygrid-day-top');
 
             if (top) {
-              top.style.backgroundColor = "#ffefef";
-              top.style.color = "#d60000";
-              top.style.fontWeight = "bold";
-              top.style.borderRadius = "4px";
-              top.style.padding = "2px 4px";
-
+              // ✅ Style plus discret pour le fond - n'occupe pas trop de place
+              top.style.backgroundColor = "rgba(255, 100, 100, 0.05)";
+              top.style.borderBottom = "2px solid rgba(255, 100, 100, 0.2)";
+              
+              // ✅ Ajouter le label de jour férié avec classe CSS
               const span = document.createElement('span');
-              span.style.fontSize = '0.7rem';
-              span.style.marginRight = '4px';
-              span.style.fontWeight = 'bold';
+              span.className = 'holiday-label';
               span.textContent = str_label;
               top.appendChild(span);
             }
           }
         },
 
+        dayCellContent: function(arg) {
+          // Uniquement pour la vue du mois (dayGridMonth)
+          if (arg.view.type !== 'dayGridMonth') {
+            return null; // Laisser FullCalendarJS faire le rendu par défaut
+          }
 
+          // Compter les événements du jour
+          let eventsForDay = [];
+
+          // Chercher les événements du jour
+          if (arr_event) {
+            arr_event.forEach(event => {
+              const startDate = new Date(event.start);
+              if (startDate.toDateString() === arg.date.toDateString()) {
+                eventsForDay.push(event);
+              }
+            });
+          }
+
+          // Créer un conteneur personnalisé
+          const content = document.createElement('div');
+          content.className = 'custom-day-content';
+          content.style.padding = '2px';
+
+          // ✅ TOUJOURS afficher le numéro du jour (même s'il y a 0 événements)
+          const dayNum = document.createElement('div');
+          dayNum.className = 'day-number';
+          dayNum.textContent = arg.date.getDate();
+          dayNum.style.fontWeight = 'bold';
+          dayNum.style.fontSize = '0.95rem';
+          dayNum.style.marginBottom = '4px';
+          content.appendChild(dayNum);
+
+          // Afficher le résumé des événements
+          if (eventsForDay.length === 0) {
+            // ✅ CHANGEMENT: Retourner le conteneur avec le numéro du jour au lieu de null
+            return { domNodes: [content] };
+          } else if (eventsForDay.length === 1) {
+            // Un seul événement: afficher le titre court
+            const event = eventsForDay[0];
+            const eventEl = document.createElement('div');
+            eventEl.style.fontSize = '0.75rem';
+            eventEl.style.fontWeight = '500';
+            eventEl.style.color = '#007bff';
+            eventEl.style.marginTop = '2px';
+            eventEl.style.whiteSpace = 'nowrap';
+            eventEl.style.overflow = 'hidden';
+            eventEl.style.textOverflow = 'ellipsis';
+            eventEl.style.cursor = 'pointer';
+            eventEl.textContent = event.title;
+            
+            // Ajouter un handler de clic pour naviguer vers le détail
+            eventEl.addEventListener('click', function(e) {
+              e.stopPropagation();
+              if (event.extendedProps && event.extendedProps.id) {
+                window.location.href = `/agenda/${event.extendedProps.id}`;
+              }
+            });
+            
+            content.appendChild(eventEl);
+          } else {
+            // Plusieurs événements: afficher avec style de bouton
+            const countEl = document.createElement('div');
+            countEl.className = 'more-events-button'; // ✅ Nouvelle classe CSS
+            countEl.style.marginTop = '2px';
+            countEl.textContent = `${eventsForDay.length} plus`;
+            
+            // ✅ Ajouter un handler de clic pour le bouton "more"
+            countEl.addEventListener('click', function(e) {
+              e.stopPropagation();
+              // Si on est en vue mensuelle, naviguer vers la vue du jour
+              if (arg.view.type === 'dayGridMonth') {
+                this.calendar.changeView('dayGridDay', arg.date);
+              }
+            }.bind(this.calendar)); // Bind le contexte du calendrier
+            
+            content.appendChild(countEl);
+          }
+
+          return { domNodes: [content] };
+        },
         // 👉 On REMPLACE complètement le rendu de l’event
-        eventContent: function (arg) {
-          const { lieu, description, eleves = [] } = arg.event.extendedProps || {};
+        eventContent: function (arg) {          // En vue du mois, on affiche le résumé dans dayCellContent
+          if (arg.view.type === 'dayGridMonth') {
+            return null; // Les événements sont gérés par dayCellContent
+          }
+          const { lieu, description, eleves = [], id } = arg.event.extendedProps || {};
 
           const timeText = arg.timeText || ''; // ex. "10:00"
           const titleText = arg.event.title || '';
 
           const container = document.createElement('div');
           container.className = 'fc-event-custom';
+          container.style.cursor = 'pointer';
+          
+          // Ajouter un attribut data-event-id pour faciliter la sélection
+          if (id) {
+            container.setAttribute('data-event-id', id);
+          }
 
           // Header : heure + titre sur la même ligne
           const header = document.createElement('div');
@@ -205,9 +312,24 @@ export default class Agenda {
         },
 
         headerToolbar: {
-          left: 'prev,next today',
+          left: 'prev,next today createBtn myAgendaBtn',
           center: 'title',
           right: 'dayGridMonth,dayGridWeek,dayGridDay'
+        },
+        
+        customButtons: {
+          createBtn: {
+            text: '➕ Créer',
+            click: function() {
+              window.location.href = '/agenda/create';
+            }
+          },
+          myAgendaBtn: {
+            text: '👤 Mon agenda',
+            click: function() {
+              window.location.href = '/agenda/me';
+            }
+          }
         }
       });
 
@@ -229,24 +351,39 @@ export default class Agenda {
   }
 
   addDate(obj_event) {
-    const fin = new Date(
-      new Date(obj_event.date.date.replace(' ', 'T')).getTime() +
-        obj_event.duree * 1000
-    );
+    // Vérifier que le calendrier est prêt
+    if (!this.calendar || !obj_event || !obj_event.date) {
+      console.log('📅 Données d\'événement invalides', obj_event);
+      console.warn('⚠️ Calendrier non prêt ou données invalides', obj_event);
+      return;
+    }
 
-    this.calendar.addEvent({
+    try {
+      const dateString = obj_event.date.date || obj_event.date;
+      const dateObj = new Date(dateString.replace(' ', 'T'));
+      
+      if (isNaN(dateObj.getTime())) {
+        console.error('❌ Date invalide:', dateString);
+        return;
+      }
+
+      const fin = new Date(dateObj.getTime() + (obj_event.duree || 60) * 1000);
+
+      this.calendar.addEvent({
       title: obj_event.title,
-      start: obj_event.date.date,
+      start: obj_event.date.date || obj_event.date,
       end: fin,
       extendedProps: {
+        id: obj_event.id,
         lieu: obj_event.lieu,
         description: obj_event.corps,
         classe: obj_event.classe,
-        eleves: obj_event.eleves
+        eleves: obj_event.eleves,
+        recurrence: obj_event.recurrence
       }
-    });
-
-    this.calendar.render();
+    });} catch (error) {
+      console.error('❌ Erreur lors de l\'ajout d\'un événement:', error, obj_event);
+    }
   }
 
   eventCalendar(event) {

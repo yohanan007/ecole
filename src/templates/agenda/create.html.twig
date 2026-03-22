@@ -9,8 +9,7 @@
             <h1 class="h3 mb-0">Créer un événement</h1>
         </div>
         <div class="card-body">
-            <form method="post" action="{{ path('app_agenda_post') }}">
-                <input type="hidden" name="create-time" value="{{ csrf_token('create-time') }}">
+            {{ form_start(form) }}
 
                 <!-- Élève -->
                 <div class="mb-3">
@@ -35,20 +34,20 @@
                 
                 <!-- Sujet -->
                 <div class="mb-3">
-                    <label for="sujet" class="form-label fw-bold">Sujet de l’événement</label>
-                    <input name="sujet" id="sujet" class="form-control" required>
+                    {{ form_label(form.sujet) }}
+                    {{ form_widget(form.sujet, {'attr': {'class': 'form-control'}}) }}
                 </div>
 
-                <!-- Objet -->
+                <!-- Description -->
                 <div class="mb-3">
-                    <label for="data" class="form-label fw-bold">Objet de l’événement</label>
-                    <textarea name="data" id="data" class="form-control" rows="3" required></textarea>
+                    {{ form_label(form.corps) }}
+                    {{ form_widget(form.corps, {'attr': {'class': 'form-control'}}) }}
                 </div>
 
-                <!-- Lieu de l'évènement-->
+                <!-- Lieu -->
                 <div class="mb-3">
-                    <label for="lieu" class="form-label fw-bold">Lieu de l'évènement</label>
-                    <input name="lieu" id="lieu" class="form-control">
+                    {{ form_label(form.lieu) }}
+                    {{ form_widget(form.lieu, {'attr': {'class': 'form-control'}}) }}
                 </div>
 
                 <!-- Début -->
@@ -56,45 +55,32 @@
                     <label class="form-label fw-bold">Début</label>
                     <div class="row g-2">
                         <div class="col-md-6">
-                            <input type="date" name="dateDebut" id="dateDebut" class="form-control" value="2025-06-12" required>
+                            <input type="date" name="dateDebut" id="dateDebut" class="form-control" required>
                         </div>
                         <div class="col-md-6">
-                            <input type="time" name="heureDebut" id="heureDebut" class="form-control" value="19:30" required>
+                            <input type="time" name="heureDebut" id="heureDebut" class="form-control" required>
                         </div>
                     </div>
                 </div>
 
-                <!-- Fin -->
+                <!-- Durée -->
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Fin</label>
-                    <div class="row g-2">
-                        <div class="col-md-6">
-                            <input type="date" name="dateFin" id="dateFin" class="form-control" value="2025-06-12" required>
-                        </div>
-                        <div class="col-md-6">
-                            <input type="time" name="heureFin" id="heureFin" class="form-control" value="19:30" required>
-                        </div>
-                    </div>
+                    {{ form_label(form.duree) }}
+                    {{ form_widget(form.duree, {'attr': {'class': 'form-control'}}) }}
                 </div>
 
-                <!-- Reccurence -->
+                <!-- Récurrence -->
                 <div class="mb-3">
-                    <label for="reccurence" class="form-label fw-bold">Reccurence</label>
-                    <select name="reccurence" id="reccurence" class="form-select">
-                    </select>
+                    {{ form_label(form.recurrence) }}
+                    {{ form_widget(form.recurrence, {'attr': {'class': 'form-select'}}) }}
                 </div>
-
-
-                <input type="hidden" name="token_info_utilisateur" id="token_info_utilisateur" value="{{ csrf_token('info_data_eleve') }}">
-                <input type="hidden" name="token_info_utilisateur" id="token_info_utilisateur" value="{{ csrf_token('create-time') }}">
 
                 <!-- Bouton -->
                 <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-calendar-plus me-2"></i>Créer l’événement
-                    </button>
+                    {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary btn-lg'}}) }}
                 </div>
-            </form>
+
+            {{ form_end(form) }}
         </div>
     </section>
 </main>

@@ -48,17 +48,26 @@ class AgendaRepository extends ServiceEntityRepository
         }
     }
 
-public function getAgendaAVenir($d_debut = null)
+public function getAgendaAVenir($d_debut = null, $d_fin = null)
 {
     if (is_null($d_debut)) {
-        $d_debut = new \DateTime('now');
-        $d_debut->setTime(0, 0, 0, 0);
-        $d_debut->sub(new \DateInterval('P7M'));
+        $d_debutTemp = new \DateTime('now');
+        $d_debutTemp->setTime(0, 0, 0, 0);
+
+        $d_debut = clone $d_debutTemp;
+        $d_debut->sub(new \DateInterval('P6M'));
+        
+    }
+
+    if (is_null($d_fin)) {
+        $d_fin = clone $d_debutTemp;
+        $d_fin->add(new \DateInterval('P9M')); // Limite à 9 mois max
     }
 
     $qb = $this->createQueryBuilder('a');
 
     $qb->select('
+            DISTINCT a.id,
             a.heureDebut,
             e.id AS evenement_id,
             e.sujet,
@@ -73,8 +82,11 @@ public function getAgendaAVenir($d_debut = null)
         ->innerJoin('a.evenements', 'e')
         ->leftJoin('e.users', 'u')
         ->leftJoin('App\Entity\Eleve', 'el', 'WITH', 'el.user = u.id')
-        ->where('a.heureDebut > :date')
-        ->setParameter('date', $d_debut);
+        ->where('a.heureDebut >= :date_debut')
+        ->andWhere('a.heureDebut <= :date_fin')
+        ->orderBy('a.heureDebut', 'ASC')
+        ->setParameter('date_debut', $d_debut)
+        ->setParameter('date_fin', $d_fin);
 
     return $qb->getQuery()->getResult();
 }

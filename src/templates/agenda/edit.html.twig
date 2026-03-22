@@ -1,0 +1,158 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Éditer l'événement: {{ evenement.sujet }}{% endblock %}
+
+{% block body %}
+<main class="container my-4">
+    <section class="card shadow-sm border-warning">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">✏️ Éditer: {{ evenement.sujet }}</h1>
+            <a href="{{ path('app_agenda') }}" class="btn btn-light btn-sm">
+                ← Retour à l'agenda
+            </a>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ path('app_agenda_edit', {'id': evenement.id}) }}" class="needs-validation" novalidate>
+                <input type="hidden" name="create-time" value="{{ csrf_token('create-time') }}">
+
+                <div class="row">
+                    <div class="col-lg-6">
+                        <!-- Sujet -->
+                        <div class="mb-3">
+                            <label for="sujet" class="form-label fw-bold">📌 Sujet de l'événement</label>
+                            <input type="text" name="sujet" id="sujet" class="form-control form-control-lg" value="{{ evenement.sujet }}" required>
+                        </div>
+
+                        <!-- Lieu -->
+                        <div class="mb-3">
+                            <label for="lieu" class="form-label fw-bold">📍 Lieu</label>
+                            <input type="text" name="lieu" id="lieu" class="form-control" value="{{ evenement.lieu ?? '' }}">
+                        </div>
+
+                        <!-- Durée -->
+                        <div class="mb-3">
+                            <label for="duree" class="form-label fw-bold">⏱️ Durée (minutes)</label>
+                            <input type="number" name="duree" id="duree" class="form-control" value="{{ evenement.duree ?? '' }}" min="0">
+                        </div>
+
+                        <!-- Créé par -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">👤 Créé par</label>
+                            <p class="form-control-plaintext">
+                                {{ evenement.adminCreateur ? evenement.adminCreateur.prenom ~ ' ' ~ evenement.adminCreateur.nom : 'Non défini' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <!-- Récurrence -->
+                        <div class="mb-3">
+                            <label for="recurrence" class="form-label fw-bold">🔄 Récurrence</label>
+                            <select name="recurrence" id="recurrence" class="form-select">
+                                <option value="aucune" {% if evenement.recurrence == 'aucune' %}selected{% endif %}>Aucune</option>
+                                <option value="jour" {% if evenement.recurrence == 'jour' %}selected{% endif %}>Quotidien</option>
+                                <option value="semaine" {% if evenement.recurrence == 'semaine' %}selected{% endif %}>Hebdomadaire</option>
+                                <option value="deuxSemaines" {% if evenement.recurrence == 'deuxSemaines' %}selected{% endif %}>Bi-hebdomadaire</option>
+                                <option value="mois" {% if evenement.recurrence == 'mois' %}selected{% endif %}>Mensuel</option>
+                            </select>
+                        </div>
+
+                        <!-- Description/Corps -->
+                        <div class="mb-3">
+                            <label for="corps" class="form-label fw-bold">📝 Description</label>
+                            <textarea name="corps" id="corps" class="form-control" rows="4">{{ evenement.corps ?? '' }}</textarea>
+                        </div>
+
+                        <!-- Date de création -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">📅 Créé le</label>
+                            <p class="form-control-plaintext">
+                                {{ evenement.createdAt ? evenement.createdAt.format('d/m/Y à H:i') : 'Non défini' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Section Participants -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h5 class="mb-3">👥 Sélectionner les classes</h5>
+                        <div class="mb-3">
+                            <label for="classe" class="form-label">Classes</label>
+                            <select name="classe" id="classe" class="form-select">
+                                <option value="-1">Toutes les classes</option>
+                                {% for classe in classes %}
+                                    <option value="{{ classe.id }}">{{ classe.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <h5 class="mb-3">👤 Participants actuels</h5>
+                        <div class="mb-3">
+                            <div class="list-group list-group-sm">
+                                {% for user in evenement.users %}
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>{{ user.email }}</span>
+                                    </div>
+                                {% else %}
+                                    <p class="form-text">Aucun participant ajouté</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Section Date et Heure -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h5 class="mb-3">📆 Date et heure de début</h5>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label for="dateDebut" class="form-label">Date</label>
+                                <input type="date" name="dateDebut" id="dateDebut" class="form-control" 
+                                    value="{{ evenement.agenda.heureDebut ? evenement.agenda.heureDebut.format('Y-m-d') : '' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="heureDebut" class="form-label">Heure</label>
+                                <input type="time" name="heureDebut" id="heureDebut" class="form-control" 
+                                    value="{{ evenement.agenda.heureDebut ? evenement.agenda.heureDebut.format('H:i') : '08:00' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <h5 class="mb-3">⏰ Durée estimée</h5>
+                        <p class="alert alert-info">
+                            ⏱️ Durée: {{ evenement.duree ? evenement.duree ~ ' minutes' : 'Non défunie' }}
+                        </p>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Boutons -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning btn-lg flex-grow-1">
+                        <i class="bi bi-pencil-square me-2"></i>Mettre à jour
+                    </button>
+                    <form method="post" action="{{ path('app_agenda_delete', {'id': evenement.id}) }}" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                        <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+                            <i class="bi bi-trash me-2"></i>Supprimer
+                        </button>
+                    </form>
+                    <a href="{{ path('app_agenda') }}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-x-circle me-2"></i>Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+{% endblock %}

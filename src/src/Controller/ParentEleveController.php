@@ -8,19 +8,19 @@ use App\Entity\User;
 use App\Entity\ParentEleve;
 use App\Form\ParentEleveType;
 use App\Repository\ParentEleveRepository;
+use App\Repository\EleveRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[Route("/parent/eleve")]
 class ParentEleveController extends AbstractController
 {
     #[Route("/", name:"app_parent_eleve_index", methods:["GET"])]
-    public function index(UserGenerator $userGenerator, ParentGenerator $parentGenerator, ParentEleveRepository $parentEleveRepository): Response
+    public function index(UserGenerator $userGenerator, ParentGenerator $parentGenerator,EleveRepository $eleveRepository, ParentEleveRepository $parentEleveRepository): Response
     {
         $b_isAdmin = $userGenerator->isAdmin();
         if($b_isAdmin)
@@ -31,8 +31,19 @@ class ParentEleveController extends AbstractController
         }
         else
         {
-                return $this->render('parent_eleve/index.html.twig', [
-                'parent_eleves' => $parentGenerator->getParentCourant(),
+                $parentCourant = $parentGenerator->getParentCourant();
+
+                if($parentCourant === null)
+                {
+                    return $this->render('parent_eleve/index.html.twig', [
+                        'eleves' => null,
+                        'parent' => null,
+                    ]); 
+                }
+
+                $eleves = $eleveRepository->findEleveByParent($parentCourant->getId());
+                return $this->render('eleve/index.html.twig', [
+                'eleves' => $eleves,
             ]);        
         }
 
@@ -50,7 +61,6 @@ class ParentEleveController extends AbstractController
         
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            dump($request->request);
             $t_email = $request->request->all('parent_eleve')['user']['email'];
             $t_password = $request->request->all('parent_eleve')['user']['password']['first'];
             $t_passwordRepeat = $request->request->all('parent_eleve')['user']['password']['second'];
@@ -81,7 +91,6 @@ class ParentEleveController extends AbstractController
     #[Route("/{id}", name:"app_parent_eleve_show", methods:["GET"])]
     public function show(Request $request, ParentEleve $parentEleve): Response
     {
-        dump("show parent eleve");
         return $this->render('parent_eleve/show.html.twig', [
             'parent_eleve' => $parentEleve,
         ]);
