@@ -10,13 +10,14 @@ import { Link } from '@ckeditor/ckeditor5-link';
 import { List } from '@ckeditor/ckeditor5-list';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
 import { Envoi } from "../utilitaire/envoi_utilitaire";
-import { ActionMonth } from "./action_month";
+import { AgendaService } from "./AgendaService";
 
 class ActionElementAgenda{
 
     int_time = new Date().getTime();
     str_typeElement = "button";
     obj_element;
+    editor = null; // Store CKEditor instance for use in event listeners
 
     constructor(str_typeElement,int_time,obj_element){
         if(typeof(str_typeElement)!= "undefined"){
@@ -230,27 +231,32 @@ class ActionElementAgenda{
         this.getCardHeader(id_header);
         await this.getCardBody(id_body);
         this.getCardFooter(id_footer,str_idTemp);
-        this.getClassicEditor(id_footer);
+        await this.getClassicEditor(id_footer);
         return cardDom;
     }
 
 
-    getClassicEditor(id_footer,str_function){
+    async getClassicEditor(id_footer,str_function){
         id_footer = id_footer || ("footer_" + this.int_time.toString());
-        let editor;
-        ClassicEditor
-        .create(document.querySelector('#editor'), {
-            plugins: this.getPlugin(),
-            toolbar: this.getToolbar()
-        })
-        .then( newEditor => {
-
-            editor = newEditor;
-        } )
-        .catch( error => {
-            console.log( error.stack );
+        
+        try {
+            const editorElement = document.querySelector('#editor');
+            if (!editorElement) {
+                console.error('❌ Editor element #editor not found in DOM');
+                return null;
+            }
+            
+            // Store editor instance as class property for use in event listeners
+            this.editor = await ClassicEditor.create(editorElement, {
+                plugins: this.getPlugin(),
+                toolbar: this.getToolbar(),
+                language: 'en' // Set language explicitly - no translation plugin needed
+            });
+            console.log('✅ CKEditor initialized successfully');
+        } catch (error) {
+            console.error('❌ CKEditor error:', error);
             return null;
-        });
+        }
 
         const str_token = document.getElementById("token").value;
         const dom_button = document.getElementById("button_action_footer");
@@ -260,7 +266,8 @@ class ActionElementAgenda{
         //secondeFin
         //data
 
-        dom_button.addEventListener("click",function(e){
+        // Use arrow function to preserve 'this' context
+        dom_button.addEventListener("click", (e) => {
             if(typeof(str_function)!== "undefined"){
                 //à definir plus tard
             }else{
@@ -271,7 +278,7 @@ class ActionElementAgenda{
                 let str_idClass = document.getElementById("id_list_classe").value
                 let str_idEleve = document.getElementById("id_list_eleve").value
 
-                const editorData = editor.getData();
+                const editorData = this.editor ? this.editor.getData() : '';
 
                 str_heureDebut =  String(Number(str_heureDebut) + Number(str_idTemp));
                 str_heureFin =  String(Number(str_heureFin) + Number(str_idTemp));
@@ -324,8 +331,7 @@ class ActionElementAgenda{
 
         const str_token = document.getElementById("token_info_utilisateur").value;
 
-        const ob_actionMonth = new ActionMonth();
-        const select_domClasse = await ob_actionMonth.getSelectClasse(str_token);
+        const select_domClasse = await AgendaService.getSelectClasse(str_token);
 
         const div_domEditor = document.createElement("div");
         div_domEditor.setAttribute("id", "editor");
@@ -378,9 +384,8 @@ class ActionElementAgenda{
 
     async changeClasse(str_idClasse){
         return new Promise((resolve) => {
-            const ob_actionMonth = new ActionMonth();
             const str_token = document.getElementById("token_info_utilisateur").value;
-            ob_actionMonth.getSelectEleve(str_token,str_idClasse).then(value => {
+            AgendaService.getSelectEleve(str_idClasse, str_token).then(value => {
                 resolve(value);
             }).catch(e => {
                 console.log("error" + e);

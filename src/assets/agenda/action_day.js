@@ -36,7 +36,7 @@ class ActionDay{
         const d_time = new Date(int_time);
         let str_color = "bg-primary";
 
-        if((int < 28800) | (int > 68400 )){
+        if((int_time < 28800) || (int_time > 68400 )){
             str_color = "bg-secondary";
         }
 

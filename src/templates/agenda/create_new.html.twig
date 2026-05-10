@@ -1,0 +1,148 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un événement{% endblock %}
+
+{% block body %}
+<main class="container my-4">
+    <section class="card shadow-sm border-primary">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">📅 Créer un nouvel événement</h1>
+            <a href="{{ path('app_agenda') }}" class="btn btn-light btn-sm">
+                ← Retour à l'agenda
+            </a>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ path('app_agenda_create') }}" class="needs-validation" novalidate>
+                <input type="hidden" name="create-time" value="{{ csrf_token('create-time') }}">
+                <input type="hidden" name="token_info_utilisateur" id="token_info_utilisateur" value="{{ csrf_token('info_data_eleve') }}">
+
+                <div class="row">
+                    <div class="col-lg-6">
+                        <!-- Sujet -->
+                        <div class="mb-3">
+                            <label for="sujet" class="form-label fw-bold">📌 Sujet de l'événement</label>
+                            <input type="text" name="sujet" id="sujet" class="form-control form-control-lg" placeholder="Ex: Réunion parents" required>
+                        </div>
+
+                        <!-- Lieu -->
+                        <div class="mb-3">
+                            <label for="lieu" class="form-label fw-bold">📍 Lieu</label>
+                            <input type="text" name="lieu" id="lieu" class="form-control" placeholder="Ex: Salle de réunion">
+                        </div>
+
+                        <!-- Durée -->
+                        <div class="mb-3">
+                            <label for="duree" class="form-label fw-bold">⏱️ Durée (minutes)</label>
+                            <input type="number" name="duree" id="duree" class="form-control" placeholder="60" min="0">
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <!-- Récurrence -->
+                        <div class="mb-3">
+                            <label for="recurrence" class="form-label fw-bold">🔄 Récurrence</label>
+                            <select name="recurrence" id="recurrence" class="form-select">
+                                <option value="aucune">Aucune</option>
+                                <option value="jour">Quotidien</option>
+                                <option value="semaine">Hebdomadaire</option>
+                                <option value="deuxSemaines">Bi-hebdomadaire</option>
+                                <option value="mois">Mensuel</option>
+                            </select>
+                        </div>
+
+                        <!-- Description/Corps -->
+                        <div class="mb-3">
+                            <label for="corps" class="form-label fw-bold">📝 Description</label>
+                            <textarea name="corps" id="corps" class="form-control" rows="4" placeholder="Détails de l'événement..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Section Participants -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h5 class="mb-3">👥 Sélectionner les classes</h5>
+                        <div class="mb-3">
+                            <label for="classe" class="form-label">Classes</label>
+                            <select name="classe" id="classe" class="form-select" autofocus>
+                                <option value="-1">Toutes les classes</option>
+                                {% for classe in classes %}
+                                    <option value="{{ classe.id }}">{{ classe.nom }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Les élèves validés de cette classe recevront l'invitation.</div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <h5 class="mb-3">👤 Ou sélectionner des élèves</h5>
+                        <div class="mb-3">
+                            <label for="eleve" class="form-label">Élèves spécifiques</label>
+                            <select name="eleve" id="eleve" class="form-select" multiple>
+                                <option value="-1">Tous les élèves validés</option>
+                            </select>
+                            <div class="form-text">Sélectionnez des élèves spécifiques (seuls les validés apparaissent).</div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Section Date et Heure -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h5 class="mb-3">📆 Date et heure de début</h5>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label for="dateDebut" class="form-label">Date</label>
+                                <input type="date" name="dateDebut" id="dateDebut" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="heureDebut" class="form-label">Heure</label>
+                                <input type="time" name="heureDebut" id="heureDebut" class="form-control" value="08:00" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <h5 class="mb-3">⏰ Date et heure de fin</h5>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label for="dateFin" class="form-label">Date</label>
+                                <input type="date" name="dateFin" id="dateFin" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="heureFin" class="form-label">Heure</label>
+                                <input type="time" name="heureFin" id="heureFin" class="form-control" value="09:00" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Boutons -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                        <i class="bi bi-check-circle me-2"></i>Créer l'événement
+                    </button>
+                    <a href="{{ path('app_agenda') }}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-x-circle me-2"></i>Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Aide -->
+    <div class="alert alert-info mt-3">
+        <strong>💡 Conseil :</strong> Les élèves ne verront cet événement que s'ils sont validés par un admin et que vous créez l'événement en tant qu'admin.
+    </div>
+</main>
+{% endblock %}
+
+{% block extraJs %}
+    {{ encore_entry_script_tags('agenda_create') }}
+{% endblock %}

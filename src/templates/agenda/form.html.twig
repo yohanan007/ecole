@@ -1,0 +1,362 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {% if form is defined %}
+        {% if evenement.id %}
+            Éditer - {{ evenement.sujet }}
+        {% else %}
+            Créer un événement
+        {% endif %}
+    {% else %}
+        {{ evenement.sujet }}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+<main class="container my-4">
+    <section class="card {% if form is defined %}shadow-sm border-primary{% else %}shadow-lg border-success{% endif %}">
+        <!-- HEADER CARD -->
+        <div class="card-header {% if form is defined %}bg-primary{% else %}bg-success{% endif %} text-white d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">
+                {% if form is defined %}
+                    {% if evenement.id %}
+                        ✏️ Éditer l'événement
+                    {% else %}
+                        📅 Créer un nouvel événement
+                    {% endif %}
+                {% else %}
+                    📅 {{ evenement.sujet }}
+                {% endif %}
+            </h1>
+            <div>
+                {% if form is not defined and is_granted('EVENEMENT_EDIT', evenement) %}
+                    <a href="{{ path('app_agenda_edit', {'id': evenement.id}) }}" class="btn btn-warning btn-sm me-2">
+                        ✏️ Éditer
+                    </a>
+                {% endif %}
+                <a href="{{ path('app_agenda') }}" class="btn btn-light btn-sm">
+                    ← Retour
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <!-- MODE FORMULAIRE (CREATE/EDIT) -->
+            {% if form is defined %}
+                <form method="post" action="{% if evenement.id %}{{ path('app_agenda_edit', {'id': evenement.id}) }}{% else %}{{ path('app_agenda_create') }}{% endif %}" class="needs-validation" novalidate>
+                    <input type="hidden" name="token" value="{{ csrf_token('evenement') }}">
+                    <input type="hidden" name="create-time" value="{{ csrf_token('create-time') }}">
+                    <input type="hidden" name="token_info_utilisateur" id="token_info_utilisateur" value="{{ csrf_token('info_data_eleve') }}">
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <!-- Sujet -->
+                            <div class="mb-3">
+                                <label for="sujet" class="form-label fw-bold">📌 Sujet de l'événement</label>
+                                <input type="text" name="sujet" id="sujet" class="form-control form-control-lg" placeholder="Ex: Réunion parents" value="{{ evenement.sujet ?? '' }}" required>
+                            </div>
+
+                            <!-- Lieu -->
+                            <div class="mb-3">
+                                <label for="lieu" class="form-label fw-bold">📍 Lieu</label>
+                                <input type="text" name="lieu" id="lieu" class="form-control" placeholder="Ex: Salle de réunion" value="{{ evenement.lieu ?? '' }}">
+                            </div>
+
+                            <!-- Durée -->
+                            <div class="mb-3">
+                                <label for="duree" class="form-label fw-bold">⏱️ Durée (minutes)</label>
+                                <input type="number" name="duree" id="duree" class="form-control" placeholder="60" min="0" value="{{ evenement.duree ?? '' }}">
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <!-- Récurrence -->
+                            <div class="mb-3">
+                                <label for="recurrence" class="form-label fw-bold">🔄 Récurrence</label>
+                                <select name="recurrence" id="recurrence" class="form-select">
+                                    <option value="aucune" {% if evenement.recurrence == 'aucune' %}selected{% endif %}>Aucune</option>
+                                    <option value="jour" {% if evenement.recurrence == 'jour' %}selected{% endif %}>Quotidien</option>
+                                    <option value="semaine" {% if evenement.recurrence == 'semaine' %}selected{% endif %}>Hebdomadaire</option>
+                                    <option value="deuxSemaines" {% if evenement.recurrence == 'deuxSemaines' %}selected{% endif %}>Bi-hebdomadaire</option>
+                                    <option value="mois" {% if evenement.recurrence == 'mois' %}selected{% endif %}>Mensuel</option>
+                                </select>
+                            </div>
+
+                            <!-- Description/Corps -->
+                            <div class="mb-3">
+                                <label for="corps" class="form-label fw-bold">📝 Description</label>
+                                <textarea name="corps" id="corps" class="form-control" rows="4" placeholder="Détails de l'événement...">{{ evenement.corps ?? '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Section Participants -->
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">👥 Sélectionner les classes</h5>
+                            <div class="mb-3">
+                                <label for="classe" class="form-label">Classes</label>
+                                <select name="classe" id="classe" class="form-select" autofocus>
+                                    <option value="-1">Toutes les classes</option>
+                                    {% for classe in classes %}
+                                        <option value="{{ classe.id }}">{{ classe.nom }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Les élèves validés de cette classe recevront l'invitation.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">👤 Ou sélectionner des élèves</h5>
+                            <div class="mb-3">
+                                <label for="eleve" class="form-label">Élèves spécifiques</label>
+                                <select name="eleve" id="eleve" class="form-select" multiple>
+                                    <option value="-1">Tous les élèves validés</option>
+                                </select>
+                                <div class="form-text">Sélectionnez des élèves spécifiques (seuls les validés apparaissent).</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Section Date et Heure -->
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">📆 Date et heure de début</h5>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label for="dateDebut" class="form-label">Date</label>
+                                    <input type="date" name="dateDebut" id="dateDebut" class="form-control" value="{{ evenement.agenda ? evenement.agenda.heureDebut.format('Y-m-d') : '' }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="heureDebut" class="form-label">Heure</label>
+                                    <input type="time" name="heureDebut" id="heureDebut" class="form-control" value="{{ evenement.agenda ? evenement.agenda.heureDebut.format('H:i') : '08:00' }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">⏰ Date et heure de fin</h5>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label for="dateFin" class="form-label">Date</label>
+                                    <input type="date" name="dateFin" id="dateFin" class="form-control" value="{{ evenement.agenda ? evenement.agenda.heureDebut.format('Y-m-d') : '' }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="heureFin" class="form-label">Heure</label>
+                                    <input type="time" name="heureFin" id="heureFin" class="form-control" value="{{ evenement.agenda ? evenement.agenda.heureDebut.format('H:i') : '09:00' }}" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Boutons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                            <i class="bi bi-check-circle me-2"></i>
+                            {% if evenement.id %}
+                                Mettre à jour l'événement
+                            {% else %}
+                                Créer l'événement
+                            {% endif %}
+                        </button>
+                        <a href="{{ path('app_agenda') }}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle me-2"></i>Annuler
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Aide -->
+                <div class="alert alert-info mt-3">
+                    <strong>💡 Conseil :</strong> Les élèves ne verront cet événement que s'ils sont validés par un admin et que vous créez l'événement en tant qu'admin.
+                </div>
+
+            <!-- MODE AFFICHAGE (SHOW) -->
+            {% else %}
+                <div class="row">
+                    <!-- Informations principales -->
+                    <div class="col-lg-8">
+                        <h4 class="mb-3">📋 Détails</h4>
+                        
+                        {% if evenement.corps %}
+                            <div class="mb-4">
+                                <h6 class="text-muted">Description</h6>
+                                <p class="lead">{{ evenement.corps|nl2br }}</p>
+                            </div>
+                        {% endif %}
+
+                        {% if evenement.lieu %}
+                            <div class="mb-3">
+                                <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                                <strong>Lieu:</strong> {{ evenement.lieu }}
+                            </div>
+                        {% endif %}
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">📆 Date et heure</h6>
+                                        <p class="card-text">
+                                            {% if evenement.agenda %}
+                                                <strong>{{ evenement.agenda.heureDebut.format('d/m/Y') }}</strong><br>
+                                                <small class="text-muted">{{ evenement.agenda.heureDebut.format('H:i') }}</small>
+                                            {% else %}
+                                                Non défini
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">⏱️ Durée</h6>
+                                        <p class="card-text">
+                                            {% if evenement.duree %}
+                                                <strong>{{ evenement.duree }} minutes</strong>
+                                            {% else %}
+                                                Non définie
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if evenement.recurrence and evenement.recurrence != 'aucune' %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-arrow-repeat me-2"></i>
+                                <strong>Récurrence:</strong> 
+                                {% set recurrenceLabels = {
+                                    'jour': 'Quotidien',
+                                    'semaine': 'Hebdomadaire',
+                                    'deuxSemaines': 'Bi-hebdomadaire',
+                                    'mois': 'Mensuel'
+                                } %}
+                                {{ recurrenceLabels[evenement.recurrence] ?? 'Non définie' }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Informations latérales -->
+                    <div class="col-lg-4">
+                        <!-- Admin créateur -->
+                        <div class="card mb-3 border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">👤 Organisateur</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if evenement.adminCreateur %}
+                                    <p class="mb-0">
+                                        <strong>{{ evenement.adminCreateur.prenom }} {{ evenement.adminCreateur.nom }}</strong><br>
+                                        <small class="text-muted">{{ evenement.adminCreateur.user.email }}</small>
+                                    </p>
+                                {% else %}
+                                    <p class="mb-0 text-muted">Non défini</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Date de création -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">📅 Info</h6>
+                            </div>
+                            <div class="card-body">
+                                <small class="d-block mb-2">
+                                    <i class="bi bi-calendar-check me-1"></i>
+                                    <strong>Créé le:</strong><br>
+                                    {{ evenement.createdAt.format('d/m/Y à H:i') }}
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Participants -->
+                        <div class="card">
+                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">👥 Élèves participants ({{ tous_les_eleves|length }})</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if toutes_les_classes|length > 1 %}
+                                    <!-- Filtre par classe -->
+                                    <div class="mb-3">
+                                        <label for="classeFilter" class="form-label small fw-bold">Filtrer par classe:</label>
+                                        <select id="classeFilter" class="form-select form-select-sm">
+                                            <option value="">Toutes les classes</option>
+                                            {% for classe in toutes_les_classes %}
+                                                <option value="{{ classe.id }}">{{ classe.nom }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                   <hr>
+                                {% endif %}
+
+                                <!-- Affichage des élèves par classe -->
+                                {% if tous_les_eleves|length > 0 %}
+                                    <div id="elevesContainer" style="max-height: 400px; overflow-y: auto;">
+                                        {% for classeId, data in eleves_par_classe %}
+                                            <div class="classe-group" data-classe-id="{{ classeId }}">
+                                                <div class="mb-3">
+                                                    <h6 class="text-primary fw-bold mb-2">{{ data.classe.nom }}</h6>
+                                                    <ul class="list-group">
+                                                        {% for eleve in data.eleves %}
+                                                            <li class="list-group-item">
+                                                                <strong>{{ eleve.prenom }} {{ eleve.nom }}</strong>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted small mb-0">
+                                        <i class="bi bi-info-circle me-2"></i>Aucun élève associé à cet événement
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer (Mode affichage uniquement) -->
+        {% if form is not defined %}
+            <div class="card-footer bg-light">
+                <div class="d-flex gap-2">
+                    {% if is_granted('EVENEMENT_EDIT', evenement) %}
+                        <a href="{{ path('app_agenda_edit', {'id': evenement.id}) }}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil-square me-1"></i>Éditer
+                        </a>
+                        <form method="post" action="{{ path('app_agenda_delete', {'id': evenement.id}) }}" style="display: inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr?');">
+                                <i class="bi bi-trash me-1"></i>Supprimer
+                            </button>
+                        </form>
+                    {% endif %}
+                    <a href="{{ path('app_agenda') }}" class="btn btn-secondary btn-sm ms-auto">
+                        <i class="bi bi-arrow-left me-1"></i>Retour à l'agenda
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}
+
+{% block extraJs %}
+    {% if form is defined %}
+        {{ encore_entry_script_tags('agenda_create') }}
+    {% else %}
+        {{ encore_entry_script_tags('agenda_show') }}
+    {% endif %}
+{% endblock %}

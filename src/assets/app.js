@@ -13,15 +13,8 @@ import { Tooltip, Toast, Popover } from 'bootstrap';
 // start the Stimulus application
 import './bootstrap';
 
-import  '@ckeditor/ckeditor5-editor-classic';
-import  '@ckeditor/ckeditor5-essentials';
-import  '@ckeditor/ckeditor5-autoformat';
-import  '@ckeditor/ckeditor5-basic-styles';
-import  '@ckeditor/ckeditor5-block-quote';
-import  '@ckeditor/ckeditor5-heading';
-import  '@ckeditor/ckeditor5-link';
-import  '@ckeditor/ckeditor5-list';
-import  '@ckeditor/ckeditor5-paragraph';
+// CKEditor5 is imported in specific files where it's used (e.g., action_element.js)
+// Avoid global imports to prevent webpack bundling issues
 
 //import './eleve/eleve.js';
 

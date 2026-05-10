@@ -2,113 +2,112 @@
 import Choices from 'choices.js';
 import { ClasseEleve } from '../eleve/action_eleve.js';
 
-export default class CreateAgenda{
+export default class CreateAgenda {
 
-init(){
-  const selectElement = document.getElementById('classe');
-  const selectElementEleve = document.getElementById('eleve');
-  const selectReccurence = document.getElementById('reccurence');
+  init() {
+    const selectElement = document.getElementById('classe');
+    const selectElementEleve = document.getElementById('eleve');
+    
+    // Supporte les noms de champs avec underscore ou sans (recurrence vs reccurence)
+    const selectRecurrence = document.getElementById('recurrence') || document.getElementById('reccurence');
 
-  let arr_choiceReccurrence = [];
-  arr_choiceReccurrence.push({value : "", label : "Aucune" });
-  arr_choiceReccurrence.push({value : "jour", label : "toutes les jours" });
-  arr_choiceReccurrence.push({value : "semaine", label : "toutes les semaines" });
-  arr_choiceReccurrence.push({value : "deuxSemaines", label : "toutes les deux semaines" });
-  arr_choiceReccurrence.push({value : "mois", label : "toutes les mois" });
+    let arr_choiceRecurrence = [];
+    arr_choiceRecurrence.push({value : "aucune", label : "Pas de récurrence" });
+    arr_choiceRecurrence.push({value : "jour", label : "Quotidien" });
+    arr_choiceRecurrence.push({value : "semaine", label : "Hebdomadaire" });
+    arr_choiceRecurrence.push({value : "deuxSemaines", label : "Bi-hebdomadaire" });
+    arr_choiceRecurrence.push({value : "mois", label : "Mensuel" });
 
-        if (selectElement) {
-            new Choices(selectElement, {
-            removeItemButton: true,
-            searchEnabled: true,
-            addItems: true,
-            maxItemCount: -1, 
-            placeholderValue: 'Sélectionne une option',
-             shouldSort: false,
-            });
-        }
-
-        console.log("avant reccurence");
-
-        if(selectReccurence){
-            console.log("reccurence");
-            const reccurenceChoice = new Choices(selectReccurence, {
-            removeItemButton: true,
-            searchEnabled: true,
-            addItems: true,
-            placeholderValue: 'Sélectionne une option',
-             shouldSort: false,
-            });
-
-            reccurenceChoice.setValue(arr_choiceReccurrence);
-        }
-
-        if(selectElementEleve){
-            const eleveChoice = new Choices(selectElementEleve, {
-            removeItemButton: true,
-            searchEnabled: true,
-            addItems: true,
-            maxItemCount: -1, 
-            placeholderValue: 'Sélectionne une option',
-            shouldSort: false,
-            });
-
-            selectElement.addEventListener("addItem", event => {
-            eleveChoice.destroy()
-            this.elevesChoice();
-            });
-        }
-
-
-
-    }
-
-    async elevesChoice(){
-
-        //reccupération de la classe choisit pas l'utilisateur
-        const str_selectClasse = document.getElementById("classe").value;
-        const selectElementEleve = document.getElementById('eleve');
-        const obj_classeEleve = new ClasseEleve("/eleve/list");
-        const eleveChoice = new Choices(selectElementEleve, {
+    // Initialiser le select de classe
+    if (selectElement) {
+      new Choices(selectElement, {
         removeItemButton: true,
         searchEnabled: true,
         addItems: true,
         maxItemCount: -1, 
-        placeholderValue: 'Sélectionne une option',
+        placeholderValue: 'Sélectionne une classe',
         shouldSort: false,
-        });
+      });
 
-        return new Promise((resolve) => {
-            //reccupération de l'ensemble des élèves
-            obj_classeEleve.getAllElevesByClasse(str_selectClasse).then((data)=>{
-                const ob_data = JSON.parse(data);
-                if (typeof(ob_data.data) !== "undefined"){
-                    if(ob_data.data !== null){
-                        let arr_choiceEleve = eleveChoice.getValue();
-
-                        if(typeof(arr_choiceEleve.find( value  => { value === -1 }))==="undefined"){
-                            eleveChoice.setValue([{value : -1, label : "Tous les élèves"},]);
-                        }
-
-                        for (item of ob_data.data){
-                            arr_choiceEleve = eleveChoice.getValue();
-
-                            if(typeof(arr_choiceEleve.find( value  => { value === item.id }))==="undefined"){
-                                arr_choiceEleve.push({value : item.id, label : item.nom + " " + item.prenom });
-                                eleveChoice.setValue(arr_choiceEleve);
-                            }
-                            
-                            console.log(arr_choiceEleve);
-                        }
-                    }
-                }
-                resolve(eleveChoice);
-            });
-        });
+      // Charger les élèves quand une classe est sélectionnée
+      selectElement.addEventListener("change", (event) => {
+        if (selectElementEleve) {
+          this.elevesChoice();
+        }
+      });
     }
+
+    // Initialiser le select de récurrence
+    if (selectRecurrence) {
+      new Choices(selectRecurrence, {
+        removeItemButton: true,
+        searchEnabled: true,
+        addItems: false,
+        placeholderValue: 'Sélectionne une récurrence',
+        shouldSort: false,
+      });
+    }
+
+    // Initialiser le select d'élèves
+    if (selectElementEleve) {
+      new Choices(selectElementEleve, {
+        removeItemButton: true,
+        searchEnabled: true,
+        addItems: false,
+        maxItemCount: -1, 
+        placeholderValue: 'Sélectionne des élèves',
+        shouldSort: false,
+      });
+    }
+  }
+
+  /**
+   * Charger dynamiquement les élèves basé sur la classe sélectionnée
+   */
+  async elevesChoice() {
+    const str_selectClasse = document.getElementById("classe").value;
+    const selectElementEleve = document.getElementById('eleve');
+
+    if (!str_selectClasse || str_selectClasse === "-1") {
+      return; // Toutes les classes sélectionnées
+    }
+
+    const obj_classeEleve = new ClasseEleve("/eleve/list");
+    
+    try {
+      const data = await obj_classeEleve.getAllElevesByClasse(str_selectClasse);
+      const ob_data = JSON.parse(data);
+
+      if (ob_data.data && Array.isArray(ob_data.data)) {
+        // Trouver l'instance Choices pour le select
+        const choicesInstance = selectElementEleve._instance; // PAS DIRECT: Choices stocke l'instance différemment
+
+        // Solution plus robuste: recréer le select avec les nouvelles options
+        selectElementEleve.innerHTML = '';
+        
+        ob_data.data.forEach(eleve => {
+          const option = document.createElement('option');
+          option.value = eleve.id;
+          option.textContent = `${eleve.prenom} ${eleve.nom}`;
+          selectElementEleve.appendChild(option);
+        });
+
+        console.log(`✅ ${ob_data.data.length} élèves chargés pour la classe`);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des élèves:', error);
+    }
+  }
 }
 
-
-
-const agenda = new CreateAgenda();
-agenda.init();
+// Initialiser quand le DOM est prêt
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const agenda = new CreateAgenda();
+    agenda.init();
+  });
+} else {
+  const agenda = new CreateAgenda();
+  agenda.init();
+}
 

@@ -32,21 +32,14 @@ class EleveController extends AbstractController
 {
     
      #[Route("/", name:"app_eleve_index", methods:["GET"])]
-     #[IsGranted("ROLE_USER")]
+     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function index(EleveRepository $eleveRepository): Response
     {
-        //utilisation de ternaire basique
-        /*return ($this->IsGranted("ROLE_ADMIN") ?
-         $this->render('eleve/index.html.twig', [
-            'eleves' => $eleveRepository->findAll(),
-        ]) : $this->isGranted("ROLE_USER") ? $this->render('eleve/index.html.twig', [
-            'eleves' => $eleveRepository->findAll(),"autre"=>"autre"]): $this->render('eleve/index.html.twig', [
-            'eleves' => $eleveRepository->findAll(),"autre"=>"truc"]));*/
         switch(true){
             case $this->IsGranted("ROLE_ADMIN"):
-            return $this->redirectToRoute('app_parent_eleve_index', []);
+            return $this->redirectToRoute('app_eleve_list_admin', []);
             break;
-            case $this->IsGranted("ROLE_USER"):
+            case $this->IsGranted("ROLE_PARENT"):
             return $this->redirectToRoute('app_parent_eleve_index', []);
             break;
             default:
@@ -54,6 +47,16 @@ class EleveController extends AbstractController
             break;
         }
     }
+
+    #[Route("/list", name:"app_eleve_list_admin", methods:["GET"])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function adminEleve(EleveRepository $eleveRepository): Response
+    {
+        return $this->render('eleve/index.html.twig', [
+            'eleves' => $eleveRepository->findAll(),
+         ]);
+    }
+
 
      #[Route("/new", name:"app_eleve_new", methods:["GET", "POST"])]
      #[IsGranted("ROLE_PARENT")]
