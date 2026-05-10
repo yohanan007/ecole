@@ -1,5 +1,6 @@
 const Encore = require('@symfony/webpack-encore');
-const { CKEditorTranslationsPlugin } = require( '@ckeditor/ckeditor5-dev-translations' );
+// CKEditorTranslationsPlugin disabled - language managed in ClassicEditor config
+// const { CKEditorTranslationsPlugin } = require( '@ckeditor/ckeditor5-dev-translations' );
 let { styles } = require('@ckeditor/ckeditor5-dev-utils');
 //const  MiniCssExtractPlugin  = require( 'mini-css-extract-plugin' );
 
@@ -36,16 +37,18 @@ Encore
     .addEntry('agenda', './assets/agenda/agenda.js')
     .addEntry('agenda_action', './assets/agenda/action.js')
     .addEntry('agenda_create', './assets/agenda/create.js')
+    .addEntry('agenda_show', './assets/agenda/action_show.js')
     //.addEntry('ckeditor-base', './assets/utilitaire/ckeditor_utilitaire.js')
     
     //.addStyleEntry('ckeditor-style', './assets/styles/ckeditor_plus.css')
     
 
-    .addPlugin( new CKEditorTranslationsPlugin( {
-        // See https://ckeditor.com/docs/ckeditor5/latest/features/ui-language.html
-        language: 'fr',
-        addMainLanguageTranslationsToAllAssets: true
-    }))
+    // CKEditorTranslationsPlugin disabled - manage language in ClassicEditor config instead
+    // .addPlugin( new CKEditorTranslationsPlugin( {
+    //     language: 'en',
+    //     addMainLanguageTranslationsToAllAssets: true
+    // }))
+    
     
     .addRule( {
         test: /ckeditor5-[^/\\]+[/\\]theme[/\\]icons[/\\][^/\\]+\.svg$/,

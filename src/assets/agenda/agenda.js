@@ -1,5 +1,6 @@
 
-let dom_agendaCorp = document.getElementById("agenda_corps");
+// Ne pas exécuter au chargement du module - c'est fait dans action.js
+// let dom_agendaCorp = document.getElementById("agenda_corps");
 
 
 class Heure
@@ -17,8 +18,8 @@ class Heure
             this.int_minute = int_minute;
         }
 
-        if(typeof(int_seconde) != "undefined"){
-            this.int_seconde = int_seconde;
+        if(typeof(int_heure) != "undefined"){
+            this.int_heure = int_heure;
         }
     }
 
@@ -98,7 +99,7 @@ class Jour
     d_jour;
 
     ars_jour = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
-    ars_mois = ["janvier", "fervier", "mars", "avril", "mai", "juin",
+    ars_mois = ["janvier", "février", "mars", "avril", "mai", "juin",
     "juillet", "aout", "septembre", "octobre", "novembre", "decembre"];
 
     constructor(int_jour, int_mois, int_annee)

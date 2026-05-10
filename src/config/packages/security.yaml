@@ -6,11 +6,14 @@ security:
     App\Entity\User:
       algorithm: auto
   role_hierarchy:
-    ROLE_ADMIN: [ROLE_USER, ROLE_PARENT, ROLE_ENFANT]
+    ROLE_ADMIN: [ROLE_USER]
+    ROLE_PARENT: [ROLE_USER]
+    ROLE_ENFANT: [ROLE_USER]
     ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
 
   # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
   providers:
+    users_in_memory: { memory: null }
     # used to reload user from session & other features (e.g. switch_user)
     app_user_provider:
       entity:
@@ -40,8 +43,10 @@ security:
   # Easy way to control access for large sections of your site
   # Note: Only the *first* access control that matches will be used
   access_control:
-    # - { path: ^/admin, roles: ROLE_ADMIN }
-    # - { path: ^/profile, roles: ROLE_USER }
+    - { path: ^/admin, roles: ROLE_ADMIN }
+    - { path: ^/agenda, roles: [ROLE_ADMIN, ROLE_USER] }
+    - { path: ^/eleve, roles: [ROLE_ADMIN, ROLE_ENFANT, ROLE_PARENT] }
+    - { path: ^/profile, roles: ROLE_USER }
 
 when@test:
   security:

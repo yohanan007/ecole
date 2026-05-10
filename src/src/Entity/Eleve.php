@@ -54,6 +54,25 @@ class Eleve
     #[ORM\OneToMany(targetEntity: ClasseEleve::class, mappedBy: "Eleve")]
     private $classeEleves;
 
+    /**
+     * Validation de l'inscription par un admin
+     */
+    #[ORM\Column(type: "boolean")]
+    private $isValidated = false;
+
+    /**
+     * Admin qui a validé l'élève
+     */
+    #[ORM\ManyToOne(targetEntity: Admin::class)]
+    #[ORM\JoinColumn(name: "validated_by_admin_id", referencedColumnName: "id", nullable: true)]
+    private $validatedByAdmin;
+
+    /**
+     * Date de validation
+     */
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private $validatedAt;
+
     public function __construct()
     {
         $this->parentEleves = new ArrayCollection();
@@ -222,6 +241,39 @@ class Eleve
             }
         }
 
+        return $this;
+    }
+
+    public function isValidated(): bool
+    {
+        return $this->isValidated;
+    }
+
+    public function setIsValidated(bool $isValidated): self
+    {
+        $this->isValidated = $isValidated;
+        return $this;
+    }
+
+    public function getValidatedByAdmin(): ?Admin
+    {
+        return $this->validatedByAdmin;
+    }
+
+    public function setValidatedByAdmin(?Admin $validatedByAdmin): self
+    {
+        $this->validatedByAdmin = $validatedByAdmin;
+        return $this;
+    }
+
+    public function getValidatedAt(): ?\DateTimeInterface
+    {
+        return $this->validatedAt;
+    }
+
+    public function setValidatedAt(?\DateTimeInterface $validatedAt): self
+    {
+        $this->validatedAt = $validatedAt;
         return $this;
     }
 

@@ -64,6 +64,17 @@ class EleveRepository extends ServiceEntityRepository
             ;
     }
 
+
+    public function findEleveByParent($parent){
+        return $this->createQueryBuilder('e')
+            ->innerJoin('e.parentEleves','pe')
+            ->where('pe.id = :parent')
+            ->setParameter('parent',intval($parent))
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     // /**
     //  * @return Eleve[] Returns an array of Eleve objects
     //  */

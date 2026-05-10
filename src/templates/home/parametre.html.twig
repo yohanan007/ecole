@@ -1,12 +1,196 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello parametre!{% endblock %}
+{% block title %}Paramètres du compte{% endblock %}
 
 {% block body %}
-<h1>parametre</h1>
-<p> {{user.username}}</p>
-{% for role in user.roles %}
-   <p>{{ role }}</p> 
-{% endfor %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4">
+                <i class="fas fa-cog"></i> Paramètres de mon compte
+            </h1>
 
+            {# Messages de succès et d'erreur #}
+            {% if successMessage %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> {{ successMessage }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+
+            {% if errorMessage %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+
+            {# Informations utilisateur #}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle"></i> Informations du compte
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Email (identifiant) :</strong></p>
+                            <p class="text-muted">
+                                {{ user.email }}
+                                <span class="badge bg-info">Non modifiable</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Rôles :</strong></p>
+                            <p class="text-muted">
+                                {% for role in user.roles %}
+                                    <span class="badge bg-secondary">{{ role }}</span>
+                                {% endfor %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Formulaire de mise à jour des informations personnelles #}
+            {% if entity and updateForm %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-edit"></i> Informations personnelles
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if userType == 'Admin' %}
+                            <p class="text-muted"><small>Vous êtes administrateur</small></p>
+                        {% elseif userType == 'ParentEleve' %}
+                            <p class="text-muted"><small>Vous êtes parent d'élève</small></p>
+                        {% elseif userType == 'Eleve' %}
+                            <p class="text-muted"><small>Vous êtes élève</small></p>
+                        {% endif %}
+
+                        {{ form_start(updateForm, {'attr': {'class': 'form'}}) }}
+                            <div class="row">
+                                {{ form_row(updateForm.nom, {'attr': {'class': 'form-group'}}) }}
+                                {{ form_row(updateForm.prenom, {'attr': {'class': 'form-group'}}) }}
+                            </div>
+
+                            <div class="row">
+                                {{ form_row(updateForm.telephone, {'attr': {'class': 'form-group'}}) }}
+                                {% if userType in ['ParentEleve', 'Eleve'] %}
+                                    {{ form_row(updateForm.adresse, {'attr': {'class': 'form-group'}}) }}
+                                {% endif %}
+                            </div>
+
+                            {% if userType == 'ParentEleve' %}
+                                <div class="row">
+                                    {{ form_row(updateForm.ville, {'attr': {'class': 'form-group'}}) }}
+                                    {{ form_row(updateForm.code_postal, {'attr': {'class': 'form-group'}}) }}
+                                </div>
+                                <div class="row">
+                                    {{ form_row(updateForm.pays, {'attr': {'class': 'form-group'}}) }}
+                                </div>
+                            {% elseif userType == 'Eleve' %}
+                                <div class="row">
+                                    {{ form_row(updateForm.adresse, {'attr': {'class': 'form-group'}}) }}
+                                </div>
+                            {% endif %}
+
+                            <div class="d-grid gap-2">
+                                {{ form_widget(updateForm.save, {'attr': {'class': 'btn btn-primary btn-lg'}}) }}
+                            </div>
+                        {{ form_end(updateForm) }}
+                    </div>
+                </div>
+            {% endif %}
+
+            {# Formulaire de changement de mot de passe #}
+            {% if passwordForm %}
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-key"></i> Changer le mot de passe
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(passwordForm, {'attr': {'class': 'form'}}) }}
+                            <div class="form-group mb-3">
+                                {{ form_label(passwordForm.currentPassword, 'Mot de passe actuel') }}
+                                {{ form_widget(passwordForm.currentPassword, {'attr': {'class': 'form-control', 'autocomplete': 'current-password'}}) }}
+                                {% if form_errors(passwordForm.currentPassword) %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(passwordForm.currentPassword) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group mb-3">
+                                {{ form_label(passwordForm.newPassword.first, 'Nouveau mot de passe') }}
+                                {{ form_widget(passwordForm.newPassword.first, {'attr': {'class': 'form-control', 'autocomplete': 'new-password'}}) }}
+                                {% if form_errors(passwordForm.newPassword.first) %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(passwordForm.newPassword.first) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group mb-3">
+                                {{ form_label(passwordForm.newPassword.second, 'Confirmer le mot de passe') }}
+                                {{ form_widget(passwordForm.newPassword.second, {'attr': {'class': 'form-control', 'autocomplete': 'new-password'}}) }}
+                                {% if form_errors(passwordForm.newPassword.second) %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form_errors(passwordForm.newPassword.second) }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                {{ form_widget(passwordForm.save, {'attr': {'class': 'btn btn-warning btn-lg'}}) }}
+                            </div>
+                        {{ form_end(passwordForm) }}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 8px;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .card-header {
+        border-radius: 8px 8px 0 0 !important;
+        padding-left: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .alert {
+        border-radius: 5px;
+        border: none;
+    }
+</style>
 {% endblock %}

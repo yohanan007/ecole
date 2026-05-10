@@ -1,0 +1,208 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ evenement.sujet }}{% endblock %}
+
+{% block body %}
+<main class="container my-4">
+    <section class="card shadow-lg border-success">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">📅 {{ evenement.sujet }}</h1>
+            <div>
+                {% if is_granted('EVENEMENT_EDIT', evenement) %}
+                    <a href="{{ path('app_agenda_edit', {'id': evenement.id}) }}" class="btn btn-warning btn-sm me-2">
+                        ✏️ Éditer
+                    </a>
+                {% endif %}
+                <a href="{{ path('app_agenda') }}" class="btn btn-light btn-sm">
+                    ← Retour
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <!-- Informations principales -->
+                <div class="col-lg-8">
+                    <h4 class="mb-3">📋 Détails</h4>
+                    
+                    {% if evenement.corps %}
+                        <div class="mb-4">
+                            <h6 class="text-muted">Description</h6>
+                            <p class="lead">{{ evenement.corps|nl2br }}</p>
+                        </div>
+                    {% endif %}
+
+                    {% if evenement.lieu %}
+                        <div class="mb-3">
+                            <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                            <strong>Lieu:</strong> {{ evenement.lieu }}
+                        </div>
+                    {% endif %}
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">📆 Date et heure</h6>
+                                    <p class="card-text">
+                                        {% if evenement.agenda %}
+                                            <strong>{{ evenement.agenda.heureDebut.format('d/m/Y') }}</strong><br>
+                                            <small class="text-muted">{{ evenement.agenda.heureDebut.format('H:i') }}</small>
+                                        {% else %}
+                                            Non défini
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">⏱️ Durée</h6>
+                                    <p class="card-text">
+                                        {% if evenement.duree %}
+                                            <strong>{{ evenement.duree }} minutes</strong>
+                                        {% else %}
+                                            Non définie
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if evenement.recurrence and evenement.recurrence != 'aucune' %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-arrow-repeat me-2"></i>
+                            <strong>Récurrence:</strong> 
+                            {% set recurrenceLabels = {
+                                'jour': 'Quotidien',
+                                'semaine': 'Hebdomadaire',
+                                'deuxSemaines': 'Bi-hebdomadaire',
+                                'mois': 'Mensuel'
+                            } %}
+                            {{ recurrenceLabels[evenement.recurrence] ?? 'Non définie' }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Informations latérales -->
+                <div class="col-lg-4">
+                    <!-- Admin créateur -->
+                    <div class="card mb-3 border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">👤 Organisateur</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if evenement.adminCreateur %}
+                                <p class="mb-0">
+                                    <strong>{{ evenement.adminCreateur.prenom }} {{ evenement.adminCreateur.nom }}</strong><br>
+                                    <small class="text-muted">{{ evenement.adminCreateur.user.email }}</small>
+                                </p>
+                            {% else %}
+                                <p class="mb-0 text-muted">Non défini</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Date de création -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">📅 Info</h6>
+                        </div>
+                        <div class="card-body">
+                            <small class="d-block mb-2">
+                                <i class="bi bi-calendar-check me-1"></i>
+                                <strong>Créé le:</strong><br>
+                                {{ evenement.createdAt.format('d/m/Y à H:i') }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Participants -->
+                    <div class="card">
+                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">👥 Élèves participants ({{ tous_les_eleves|length }})</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if toutes_les_classes|length > 1 %}
+                                <!-- Filtre par classe -->
+                                <div class="mb-3">
+                                    <label for="classeFilter" class="form-label small fw-bold">Filtrer par classe:</label>
+                                    <select id="classeFilter" class="form-select form-select-sm">
+                                        <option value="">Toutes les classes</option>
+                                        {% for classe in toutes_les_classes %}
+                                            {% if eleves_par_classe[classe.id] is defined %}
+                                                <option value="{{ classe.id }}">{{ classe.nom }} ({{ eleves_par_classe[classe.id].eleves|length }})</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                               <hr>
+                            {% endif %}
+
+                            <!-- Affichage des élèves par classe -->
+                            {% if tous_les_eleves|length > 0 %}
+                                <div id="elevesContainer" style="max-height: 400px; overflow-y: auto;">
+                                    {% for classeId, data in eleves_par_classe %}
+                                        <div class="classe-group mb-4" data-classe-id="{{ classeId }}">
+                                            <h6 class="text-primary fw-bold mb-2">
+                                                <i class="bi bi-building me-2"></i>{{ data.classe.nom }} 
+                                                <span class="badge bg-secondary">{{ data.eleves|length }}</span>
+                                            </h6>
+                                            <div class="list-group list-group-sm">
+                                                {% for eleve in data.eleves %}
+                                                    <div class="list-group-item">
+                                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                                            <div>
+                                                                <strong>{{ eleve.prenom }} {{ eleve.nom }}</strong>
+                                                                {% if eleve.user %}
+                                                                    <br><small class="text-muted">{{ eleve.user.email }}</small>
+                                                                {% endif %}
+                                                            </div>
+                                                            <small class="text-success">✓</small>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>Aucun élève associé à cet événement
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-light">
+            <div class="d-flex gap-2">
+                {% if is_granted('EVENEMENT_EDIT', evenement) %}
+                    <a href="{{ path('app_agenda_edit', {'id': evenement.id}) }}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil-square me-1"></i>Éditer
+                    </a>
+                    <form method="post" action="{{ path('app_agenda_delete', {'id': evenement.id}) }}" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr?');">
+                            <i class="bi bi-trash me-1"></i>Supprimer
+                        </button>
+                    </form>
+                {% endif %}
+                <a href="{{ path('app_agenda') }}" class="btn btn-secondary btn-sm ms-auto">
+                    <i class="bi bi-arrow-left me-1"></i>Retour à l'agenda
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block extraJs %}
+    {{ encore_entry_script_tags('agenda_show') }}
+{% endblock %}
