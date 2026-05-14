@@ -47,6 +47,37 @@ class ClasseEleveRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * Récupère la dernière classe pour chaque élève en une seule requête
+     * Retourne un array avec la structure: [eleve_id => ClasseEleve]
+     */
+    public function findLatestClassesByEleves(array $eleves): array
+    {
+        if (empty($eleves)) {
+            return [];
+        }
+
+        // Récupérer tous les ClasseEleve triés par DateValide DESC
+        $allClasseEleves = $this->createQueryBuilder('ce')
+            ->innerJoin('ce.Eleve', 'e')
+            ->where('e IN (:eleves)')
+            ->setParameter('eleves', $eleves)
+            ->orderBy('ce.DateValide', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        // Retourner uniquement le premier (plus récent) pour chaque élève
+        $result = [];
+        foreach ($allClasseEleves as $classeEleve) {
+            $eleveId = $classeEleve->getEleve()->getId();
+            if (!isset($result[$eleveId])) {
+                $result[$eleveId] = $classeEleve;
+            }
+        }
+
+        return $result;
+    }
+
     // /**
     //  * @return ClasseEleve[] Returns an array of ClasseEleve objects
     //  */

@@ -75,6 +75,22 @@ class EleveRepository extends ServiceEntityRepository
             ;
     }
 
+    /**
+     * Récupère tous les élèves associés à une liste d'utilisateurs en une seule requête
+     */
+    public function findByUsers(array $users): array
+    {
+        if (empty($users)) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('e')
+            ->where('e.user IN (:users)')
+            ->setParameter('users', $users)
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return Eleve[] Returns an array of Eleve objects
     //  */
