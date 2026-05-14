@@ -252,31 +252,54 @@ class AgendaGenerator
 
     /**
      * Formate les événements pour le frontend (format FullCalendar)
+     * ✅ Optimisé : charge tous les élèves et classes en une requête
      * 
      * @return array[] Array of events formatted for FullCalendar
      */
     private function formatEvents(array $events): array
     {
-        $arr_sortie = [];
+        if (empty($events)) {
+            return [];
+        }
 
+        // Phase 1 : Extraire tous les users des événements
+        $allUsers = [];
+        foreach ($events as $event) {
+            foreach ($event->getUsers() as $user) {
+                $allUsers[] = $user;
+            }
+        }
+        $allUsers = array_unique($allUsers, SORT_REGULAR);
+
+        // Phase 2 : Charger tous les élèves en une seule requête
+        $eleves = $this->eleveRepository->findByUsers($allUsers);
+        $userToEleve = [];
+        foreach ($eleves as $eleve) {
+            if ($eleve->getUser()) {
+                $userToEleve[$eleve->getUser()->getId()] = $eleve;
+            }
+        }
+
+        // Phase 3 : Charger toutes les classes les plus récentes en une seule requête
+        $classeEleveMap = $this->classeEleveRepository->findLatestClassesByEleves($eleves);
+
+        // Phase 4 : Formater les événements avec les données en cache
+        $arr_sortie = [];
         foreach ($events as $event) {
             $eventId = $event->getId();
             $heureDebut = $event->getHeureDebut();
             
             if (!$heureDebut) {
-                continue; // Skip events without start time
+                continue;
             }
 
-            // Calculer l'heure de fin basée sur la durée (en minutes)
             $heureFin = clone $heureDebut;
             if ($event->getDuree()) {
                 $heureFin->modify('+' . $event->getDuree() . ' minutes');
             }
 
-            // Récupérer les élèves et leurs classes
-            $eleveData = $this->getEleveDataFromUsers($event->getUsers());
-
-            // Déterminer la classe (première classe si elle existe, sinon 'aucune')
+            // Utiliser les données préchargées
+            $eleveData = $this->getEleveDataFromUserMap($event->getUsers(), $userToEleve, $classeEleveMap);
             $classe = $eleveData['classe'] ?? 'aucune';
 
             $arr_sortie[] = [
@@ -299,36 +322,37 @@ class AgendaGenerator
     }
 
     /**
-     * Extrait les données des élèves à partir des utilisateurs associés à l'événement
+     * Extrait les données des élèves à partir des données préchargées (sans requête DB)
      * 
+     * @param array $userToEleve Mapping user_id => Eleve
+     * @param array $classeEleveMap Mapping eleve_id => ClasseEleve
      * @return array Contient 'eleves' (array) et 'classe' (string)
      */
-    private function getEleveDataFromUsers($users): array
+    private function getEleveDataFromUserMap($users, array $userToEleve, array $classeEleveMap): array
     {
         $eleves = [];
         $classes = [];
 
         foreach ($users as $user) {
-            // Chercher l'élève associé à cet utilisateur
-            $eleve = $this->eleveRepository->findOneBy(['user' => $user]);
+            $userId = $user->getId();
             
-            if ($eleve) {
-                $eleves[] = [
-                    'id' => $eleve->getId(),
-                    'nom' => $eleve->getNom() ?? '',
-                    'prenom' => $eleve->getPrenom() ?? ''
-                ];
+            if (!isset($userToEleve[$userId])) {
+                continue;
+            }
 
-                // Récupérer la classe actuelle de l'élève
-                $classeEleve = $this->classeEleveRepository->findOneBy(
-                    ['Eleve' => $eleve],
-                    ['DateValide' => 'DESC']
-                );
+            $eleve = $userToEleve[$userId];
+            $eleves[] = [
+                'id' => $eleve->getId(),
+                'nom' => $eleve->getNom() ?? '',
+                'prenom' => $eleve->getPrenom() ?? ''
+            ];
 
-                if ($classeEleve) {
-                    $classe = $classeEleve->getClasse();
-                    $classes[] = $classe->getNom() ?? 'Sans nom';
-                }
+            // Récupérer la classe depuis le cache
+            $eleveId = $eleve->getId();
+            if (isset($classeEleveMap[$eleveId])) {
+                $classeEleve = $classeEleveMap[$eleveId];
+                $classe = $classeEleve->getClasse();
+                $classes[] = $classe->getNom() ?? 'Sans nom';
             }
         }
 
