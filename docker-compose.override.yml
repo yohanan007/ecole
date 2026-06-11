@@ -1,0 +1,32 @@
+# =============================================================================
+# Development Override Configuration
+# Usage: docker-compose up -d (auto-loads when docker-compose.override.yml exists)
+# This overrides docker-compose.yaml for development environment
+# =============================================================================
+
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: ./php/Dockerfile
+      target: dev
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: 1
+      DB_HOST: database
+      DB_USER: ${DATABASE_USER:-ecole}
+      DB_PASSWORD: ${DATABASE_PASSWORD:-ecole}
+    # Volumes: src code mounted for live editing, vendor/node_modules excluded
+    volumes:
+      - ./src:/app:cached
+      - /app/vendor
+      - /app/node_modules
+
+  database:
+    environment:
+      MYSQL_DATABASE: ${DATABASE_NAME:-ecole}
+      MYSQL_USER: ${DATABASE_USER:-ecole}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD:-ecole}
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD:-root}
